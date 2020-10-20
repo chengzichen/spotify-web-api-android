@@ -7,14 +7,14 @@ version = VERSION_NAME
 
 ext {
     bintrayRepo = 'spotify-web-api-android'
-    bintrayName = 'io.github.kaaes.spotify.webapi.core'
+    bintrayName = 'com.pghazal.spotify-web-api-android'
 
     libraryName = 'api-retrofit2'
     libraryDescription = 'Spotify Web API Android'
 
-    publishedGroupId = 'spotify-web-api-android'
+    publishedGroupId = 'com.pghazal.spotify-web-api-android'
     artifact = 'api-retrofit2'
-    libraryVersion = '1.0.0'
+    libraryVersion = '2.0.0'
 
     gitUrl = 'https://github.com/pghazal/spotify-web-api-android.git'
     siteUrl = 'https://github.com/pghazal/spotify-web-api-android'
