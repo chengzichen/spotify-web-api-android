@@ -1,8 +1,32 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
 project.group = GROUP
 version = VERSION_NAME
+
+ext {
+    bintrayRepo = 'spotify-web-api-android'
+    bintrayName = 'io.github.kaaes.spotify.webapi.core'
+
+    libraryName = 'api-retrofit2'
+    libraryDescription = 'Spotify Web API Android'
+
+    publishedGroupId = 'spotify-web-api-android'
+    artifact = 'api-retrofit2'
+    libraryVersion = '1.0.0'
+
+    gitUrl = 'https://github.com/pghazal/spotify-web-api-android.git'
+    siteUrl = 'https://github.com/pghazal/spotify-web-api-android'
+
+    developerId = 'pghazal'
+    developerName = 'Pierre Ghazal'
+    developerEmail = 'pghaz.apps@gmail.com'
+
+    licenseName = 'MIT License'
+    licenseUrl = 'https://opensource.org/licenses/mit-license.php'
+    allLicenses = ["MIT-License"]
+}
 
 dependencies {
     api project(':api-core')
@@ -32,4 +56,9 @@ android {
     lintOptions {
         warning 'InvalidPackage'
     }
+}
+
+if(project.rootProject.file('local.properties').exists()) {
+    apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+    apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
 }
