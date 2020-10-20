@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public abstract class PlaylistBase implements Parcelable {
     public Boolean collaborative;
+    public String description;
     public Map<String, String> external_urls;
     public String href;
     public String id;
@@ -29,28 +30,9 @@ public abstract class PlaylistBase implements Parcelable {
     protected PlaylistBase() {
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(this.collaborative);
-        dest.writeMap(this.external_urls);
-        dest.writeValue(this.href);
-        dest.writeValue(this.id);
-        dest.writeTypedList(this.images);
-        dest.writeValue(this.name);
-        dest.writeParcelable(owner, flags);
-        dest.writeValue(is_public);
-        dest.writeValue(snapshot_id);
-        dest.writeValue(type);
-        dest.writeValue(uri);
-    }
-
     protected PlaylistBase(Parcel in) {
         this.collaborative = (Boolean) in.readValue(Boolean.class.getClassLoader());
+        this.description = in.readString();
         this.external_urls = in.readHashMap(Map.class.getClassLoader());
         this.href = (String) in.readValue(String.class.getClassLoader());
         this.id = (String) in.readValue(String.class.getClassLoader());
@@ -61,5 +43,26 @@ public abstract class PlaylistBase implements Parcelable {
         this.snapshot_id = (String) in.readValue(String.class.getClassLoader());
         this.type = (String) in.readValue(String.class.getClassLoader());
         this.uri = (String) in.readValue(String.class.getClassLoader());
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(this.collaborative);
+        dest.writeString(this.description);
+        dest.writeMap(this.external_urls);
+        dest.writeValue(this.href);
+        dest.writeValue(this.id);
+        dest.writeTypedList(this.images);
+        dest.writeValue(this.name);
+        dest.writeParcelable(owner, flags);
+        dest.writeValue(is_public);
+        dest.writeValue(snapshot_id);
+        dest.writeValue(type);
+        dest.writeValue(uri);
     }
 }

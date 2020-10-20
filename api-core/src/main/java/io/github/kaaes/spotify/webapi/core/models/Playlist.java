@@ -7,7 +7,6 @@ import android.os.Parcelable;
  * <a href="https://developer.spotify.com/web-api/object-model/#playlist-object-full">Playlist object model</a>
  */
 public class Playlist extends PlaylistBase {
-    public String description;
     public Followers followers;
     public Pager<PlaylistTrack> tracks;
 
@@ -19,7 +18,6 @@ public class Playlist extends PlaylistBase {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
-        dest.writeString(this.description);
         dest.writeParcelable(this.followers, 0);
         dest.writeParcelable(this.tracks, 0);
     }
@@ -29,7 +27,6 @@ public class Playlist extends PlaylistBase {
 
     protected Playlist(Parcel in) {
         super(in);
-        this.description = in.readString();
         this.followers = in.readParcelable(Followers.class.getClassLoader());
         this.tracks = in.readParcelable(Pager.class.getClassLoader());
     }
