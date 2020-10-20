@@ -5,9 +5,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import io.github.kaaes.spotify.webapi.core.models.Track;
 import io.github.kaaes.spotify.webapi.retrofit.v2.Spotify;

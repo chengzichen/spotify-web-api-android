@@ -1,53 +1,29 @@
 package io.github.kaaes.spotify.webapi.samplesearch;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.common.base.Joiner;
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.github.kaaes.spotify.webapi.core.models.ArtistSimple;
 import io.github.kaaes.spotify.webapi.core.models.Image;
 import io.github.kaaes.spotify.webapi.core.models.Track;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.ViewHolder> {
 
     private final List<Track> mItems = new ArrayList<>();
     private final Context mContext;
     private final ItemSelectedListener mListener;
-
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-        public final TextView title;
-        public final TextView subtitle;
-        public final ImageView image;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            title = (TextView) itemView.findViewById(R.id.entity_title);
-            subtitle = (TextView) itemView.findViewById(R.id.entity_subtitle);
-            image = (ImageView) itemView.findViewById(R.id.entity_image);
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            notifyItemChanged(getLayoutPosition());
-            mListener.onItemSelected(v, mItems.get(getAdapterPosition()));
-        }
-    }
-
-    public interface ItemSelectedListener {
-        void onItemSelected(View itemView, Track item);
-    }
 
     public SearchResultsAdapter(Context context, ItemSelectedListener listener) {
         mContext = context;
@@ -84,12 +60,37 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
 
         Image image = item.album.images.get(0);
         if (image != null) {
-            Picasso.with(mContext).load(image.url).into(holder.image);
+            Picasso.get().load(image.url).into(holder.image);
         }
     }
 
     @Override
     public int getItemCount() {
         return mItems.size();
+    }
+
+    public interface ItemSelectedListener {
+        void onItemSelected(View itemView, Track item);
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        public final TextView title;
+        public final TextView subtitle;
+        public final ImageView image;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            title = (TextView) itemView.findViewById(R.id.entity_title);
+            subtitle = (TextView) itemView.findViewById(R.id.entity_subtitle);
+            image = (ImageView) itemView.findViewById(R.id.entity_image);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            notifyItemChanged(getLayoutPosition());
+            mListener.onItemSelected(v, mItems.get(getAdapterPosition()));
+        }
     }
 }

@@ -1,6 +1,6 @@
 package io.github.kaaes.spotify.webapi.samplesearch;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 public interface Player {
 

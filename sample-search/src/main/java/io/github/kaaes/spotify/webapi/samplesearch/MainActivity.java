@@ -3,15 +3,16 @@ package io.github.kaaes.spotify.webapi.samplesearch;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.SearchView;
 
-import io.github.kaaes.spotify.webapi.core.models.Track;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+
+import io.github.kaaes.spotify.webapi.core.models.Track;
 
 public class MainActivity extends AppCompatActivity implements Search.View {
 
@@ -23,19 +24,6 @@ public class MainActivity extends AppCompatActivity implements Search.View {
     private LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
     private ScrollListener mScrollListener = new ScrollListener(mLayoutManager);
     private SearchResultsAdapter mAdapter;
-
-
-    private class ScrollListener extends ResultListScrollListener {
-
-        public ScrollListener(LinearLayoutManager layoutManager) {
-            super(layoutManager);
-        }
-
-        @Override
-        public void onLoadMore() {
-            mActionListener.loadMoreResults();
-        }
-    }
 
     public static Intent createIntent(Context context) {
         return new Intent(context, MainActivity.class);
@@ -125,6 +113,18 @@ public class MainActivity extends AppCompatActivity implements Search.View {
     protected void onDestroy() {
         mActionListener.destroy();
         super.onDestroy();
+    }
+
+    private class ScrollListener extends ResultListScrollListener {
+
+        public ScrollListener(LinearLayoutManager layoutManager) {
+            super(layoutManager);
+        }
+
+        @Override
+        public void onLoadMore() {
+            mActionListener.loadMoreResults();
+        }
     }
 
 }

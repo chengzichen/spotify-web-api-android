@@ -1,15 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
 
     defaultConfig {
         applicationId "io.github.kaaes.spotify.webapi.samplesearch"
-        minSdkVersion 15
-        targetSdkVersion 23
+        minSdkVersion 16
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -22,6 +24,11 @@ android {
     lintOptions {
         warning 'InvalidPackage'
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 repositories {
@@ -33,14 +40,14 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:23.2.1'
-    compile 'com.android.support:recyclerview-v7:23.2.1'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.google.guava:guava:18.0'
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.guava:guava:24.1-jre'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // The way to use dependency from the remote repo
     // compile 'com.github.kaaes.spotify-web-api-android:api-retrofit2:retrofit_2-SNAPSHOT'
-    compile project(':api-retrofit2')
-    compile(name: 'spotify-auth-1.0.0-beta12', ext: 'aar')
+    api project(':api-retrofit2')
+    implementation 'com.spotify.android:auth:1.2.3'
 }

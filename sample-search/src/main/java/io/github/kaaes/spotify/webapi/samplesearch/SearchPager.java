@@ -1,15 +1,15 @@
 package io.github.kaaes.spotify.webapi.samplesearch;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import io.github.kaaes.spotify.webapi.core.Options;
 import io.github.kaaes.spotify.webapi.core.models.Track;
 import io.github.kaaes.spotify.webapi.core.models.TracksPager;
 import io.github.kaaes.spotify.webapi.retrofit.v2.SpotifyCallback;
 import io.github.kaaes.spotify.webapi.retrofit.v2.SpotifyError;
 import io.github.kaaes.spotify.webapi.retrofit.v2.SpotifyService;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -20,12 +20,6 @@ public class SearchPager {
     private int mCurrentOffset;
     private int mPageSize;
     private String mCurrentQuery;
-
-    public interface CompleteListener {
-        void onComplete(List<Track> items);
-
-        void onError(Throwable error);
-    }
 
     public SearchPager(SpotifyService spotifyApi) {
         mSpotifyApi = spotifyApi;
@@ -61,5 +55,11 @@ public class SearchPager {
                 listener.onError(error);
             }
         });
+    }
+
+    public interface CompleteListener {
+        void onComplete(List<Track> items);
+
+        void onError(Throwable error);
     }
 }

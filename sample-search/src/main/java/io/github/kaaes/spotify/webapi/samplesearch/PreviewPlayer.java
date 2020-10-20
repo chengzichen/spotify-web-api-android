@@ -2,8 +2,9 @@ package io.github.kaaes.spotify.webapi.samplesearch;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 

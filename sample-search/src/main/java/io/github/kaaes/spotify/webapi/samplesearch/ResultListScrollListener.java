@@ -1,8 +1,9 @@
 package io.github.kaaes.spotify.webapi.samplesearch;
 
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public abstract class ResultListScrollListener extends RecyclerView.OnScrollListener {
 
