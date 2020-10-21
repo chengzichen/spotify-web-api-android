@@ -27,6 +27,7 @@ import io.github.kaaes.spotify.webapi.core.models.Recommendations;
 import io.github.kaaes.spotify.webapi.core.models.Result;
 import io.github.kaaes.spotify.webapi.core.models.SavedAlbum;
 import io.github.kaaes.spotify.webapi.core.models.SavedTrack;
+import io.github.kaaes.spotify.webapi.core.models.SearchResult;
 import io.github.kaaes.spotify.webapi.core.models.SeedsGenres;
 import io.github.kaaes.spotify.webapi.core.models.SnapshotId;
 import io.github.kaaes.spotify.webapi.core.models.Track;
@@ -756,6 +757,32 @@ public interface SpotifyService {
      **********/
 
     /**
+     * Get Spotify catalog information that match a keyword string.
+     * Search results include hits from all the specified item types.
+     *
+     * @param q    The search query's keywords (and optional field filters and operators), for example "roadhouse+blues"
+     * @param type Valid types are: album , artist, playlist, track, show and episode.
+     * @return A SearchResult object with item for each type
+     * @see <a href="https://developer.spotify.com/web-api/search-item/">Search for an Item</a>
+     */
+    @GET("search")
+    Call<SearchResult> search(@Query("q") String q, @Query("type") String type);
+
+    /**
+     * Get Spotify catalog information that match a keyword string.
+     * Search results include hits from all the specified item types.
+     *
+     * @param q       The search query's keywords (and optional field filters and operators), for example "roadhouse+blues"
+     * @param type    Valid types are: album , artist, playlist, track, show and episode.
+     * @param options Optional parameters. For list of supported parameters see
+     *                <a href="https://developer.spotify.com/web-api/search-item/">endpoint documentation</a>
+     * @return A SearchResult object with item for each type
+     * @see <a href="https://developer.spotify.com/web-api/search-item/">Search for an Item</a>
+     */
+    @GET("search")
+    Call<SearchResult> search(@Query("q") String q, @Query("type") String type, @QueryMap Map<String, Object> options);
+
+    /**
      * Get Spotify catalog information about tracks that match a keyword string.
      *
      * @param q The search query's keywords (and optional field filters and operators), for example "roadhouse+blues"
@@ -938,7 +965,7 @@ public interface SpotifyService {
      * Get the Current User's Recently Played Tracks.
      *
      * @param options Optional parameters. For list of available parameters see
-     *                *                <a href="https://developer.spotify.com/documentation/web-api/reference-beta/#endpoint-get-recently-played">endpoint documentation</a>
+     *                <a href="https://developer.spotify.com/documentation/web-api/reference-beta/#endpoint-get-recently-played">endpoint documentation</a>
      * @return Recently played tracks with their context (e.g: while playing a playlist)
      */
     @GET("me/player/recently-played")
