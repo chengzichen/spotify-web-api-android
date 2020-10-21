@@ -57,4 +57,4 @@ android.testOptions.unitTests.all {
     }
 }
 
-
+apply from: rootProject.file('release-bintray.gradle')
