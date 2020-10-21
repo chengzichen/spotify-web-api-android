@@ -1,5 +1,7 @@
 package io.github.kaaes.spotify.webapi.retrofit.v2;
 
+import java.util.Map;
+
 import io.github.kaaes.spotify.webapi.core.models.Album;
 import io.github.kaaes.spotify.webapi.core.models.Albums;
 import io.github.kaaes.spotify.webapi.core.models.AlbumsPager;
@@ -11,6 +13,7 @@ import io.github.kaaes.spotify.webapi.core.models.AudioFeaturesTrack;
 import io.github.kaaes.spotify.webapi.core.models.AudioFeaturesTracks;
 import io.github.kaaes.spotify.webapi.core.models.CategoriesPager;
 import io.github.kaaes.spotify.webapi.core.models.Category;
+import io.github.kaaes.spotify.webapi.core.models.CursorPager;
 import io.github.kaaes.spotify.webapi.core.models.FeaturedPlaylists;
 import io.github.kaaes.spotify.webapi.core.models.NewReleases;
 import io.github.kaaes.spotify.webapi.core.models.Pager;
@@ -19,6 +22,7 @@ import io.github.kaaes.spotify.webapi.core.models.PlaylistFollowPrivacy;
 import io.github.kaaes.spotify.webapi.core.models.PlaylistSimple;
 import io.github.kaaes.spotify.webapi.core.models.PlaylistTrack;
 import io.github.kaaes.spotify.webapi.core.models.PlaylistsPager;
+import io.github.kaaes.spotify.webapi.core.models.RecentlyPlayedTrack;
 import io.github.kaaes.spotify.webapi.core.models.Recommendations;
 import io.github.kaaes.spotify.webapi.core.models.Result;
 import io.github.kaaes.spotify.webapi.core.models.SavedAlbum;
@@ -32,9 +36,6 @@ import io.github.kaaes.spotify.webapi.core.models.TracksToRemove;
 import io.github.kaaes.spotify.webapi.core.models.TracksToRemoveWithPosition;
 import io.github.kaaes.spotify.webapi.core.models.UserPrivate;
 import io.github.kaaes.spotify.webapi.core.models.UserPublic;
-
-import java.util.Map;
-
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -932,4 +933,14 @@ public interface SpotifyService {
      */
     @GET("me/top/tracks")
     Call<Pager<Track>> getTopTracks(@QueryMap Map<String, Object> options);
+
+    /**
+     * Get the Current User's Recently Played Tracks.
+     *
+     * @param options Optional parameters. For list of available parameters see
+     *                *                <a href="https://developer.spotify.com/documentation/web-api/reference-beta/#endpoint-get-recently-played">endpoint documentation</a>
+     * @return Recently played tracks with their context (e.g: while playing a playlist)
+     */
+    @GET("me/player/recently-played")
+    Call<CursorPager<RecentlyPlayedTrack>> getRecentlyPlayed(@QueryMap Map<String, Object> options);
 }

@@ -50,4 +50,18 @@ public class Options {
      * and time in the day. If not provided, the response defaults to the current UTC time
      */
     public static final String TIMESTAMP = "timestamp";
+
+    /**
+     * A Unix timestamp in milliseconds. Returns all items before (but not including)
+     * this cursor position. If before is specified, after must not be specified.
+     * Integer type.
+     */
+    public static final String BEFORE = "before";
+
+    /**
+     * A Unix timestamp in milliseconds. Returns all items after (but not including)
+     * this cursor position. If after is specified, before must not be specified.
+     * Integer type.
+     */
+    public static final String AFTER = "after";
 }
