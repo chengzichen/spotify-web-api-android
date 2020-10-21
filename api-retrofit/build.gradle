@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
-project.group = GROUP
-version = VERSION_NAME
+project.group = POM_BINTRAY_NAME
+version = POM_VERSION
 
 dependencies {
-    api project(':api-core')
-    api 'com.squareup.retrofit:retrofit:1.9.0'
+    implementation project(':api-core')
+    implementation 'com.squareup.retrofit:retrofit:1.9.0'
 
     testImplementation("org.robolectric:robolectric:${ROBOLECTRIC_VERSION}") {
         exclude group: 'com.android.support', module: 'support-v4'

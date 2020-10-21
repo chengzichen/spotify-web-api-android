@@ -2,13 +2,13 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'com.github.dcendents.android-maven'
 
-project.group = GROUP
-version = VERSION_NAME
+project.group = POM_BINTRAY_NAME
+version = POM_VERSION
 
 dependencies {
-    api project(':api-core')
-    api 'com.squareup.retrofit2:retrofit:2.9.0'
-    api 'com.squareup.retrofit2:converter-gson:2.2.0'
+    implementation project(':api-core')
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.2.0'
 }
 
 apply from: rootProject.file('release.gradle')

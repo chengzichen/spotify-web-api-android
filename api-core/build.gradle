@@ -1,8 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
-project.group = GROUP
-version = VERSION_NAME
+project.group = POM_BINTRAY_NAME
+version = POM_VERSION
 
 dependencies {
     testImplementation "junit:junit:${JUNIT_VERSION}"

@@ -15,12 +15,9 @@ android.libraryVariants.all { variant ->
 
 // make proper name for 'aar' file
 android.libraryVariants.all { variant ->
-    variant.outputs.each { output ->
-        def outputFile = output.outputFile
-        if (outputFile != null && output.outputFileName.endsWith('.aar')) {
-            output.outputFileName = "spotify-${project.name}-${version}.aar"
-            //def fileName = "spotify-${project.name}-${version}.aar"
-            //output.outputFile = new File(outputFile.parent, fileName)
+    variant.variantData.outputFactory.apkDataList.each { apkData ->
+        if (apkData.outputFileName.endsWith('.aar')) {
+            apkData.outputFileName = "spotify-${project.name}-${version}.aar"
         }
     }
 }
