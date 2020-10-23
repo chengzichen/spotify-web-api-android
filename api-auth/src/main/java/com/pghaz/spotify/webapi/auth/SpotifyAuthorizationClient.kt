@@ -147,6 +147,24 @@ class SpotifyAuthorizationClient {
     }
 
     /**
+     * Determines whether the access token is considered to have expired. If no refresh token
+     * has been acquired, then this method will always return `false`. A token refresh
+     * can be forced, regardless of the validity of any currently acquired access token, by
+     * calling setNeedsTokenRefresh(boolean).
+     */
+    fun getNeedsTokenRefresh(): Boolean {
+        return mAuthStateManager.currentState.needsTokenRefresh
+    }
+
+    /**
+     * Sets whether to force an access token refresh, regardless of the current access token's
+     * expiration time.
+     */
+    fun setNeedsTokenRefresh(needsTokenRefresh: Boolean) {
+        mAuthStateManager.currentState.needsTokenRefresh = needsTokenRefresh
+    }
+
+    /**
      * Initializes the authorization service configuration if necessary from the local
      * static values
      */
