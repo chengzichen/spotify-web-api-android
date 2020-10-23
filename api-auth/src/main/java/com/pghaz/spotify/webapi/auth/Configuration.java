@@ -20,6 +20,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Base64;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -34,6 +35,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import okio.Buffer;
 import okio.BufferedSource;
@@ -77,7 +80,7 @@ public final class Configuration {
 
         try {
             readConfiguration(clientId, redirectUri, scopes, colorResId);
-        } catch (InvalidConfigurationException ex) {
+        } catch (InvalidConfigurationException | NoSuchAlgorithmException ex) {
             mConfigError = ex.getMessage();
         }
     }
@@ -172,7 +175,9 @@ public final class Configuration {
     }
 
     private void readConfiguration(String clientId, String redirectUri,
-                                   String[] scopes, @ColorInt int colorResId) throws InvalidConfigurationException {
+                                   String[] scopes, @ColorInt int colorResId)
+            throws InvalidConfigurationException, NoSuchAlgorithmException {
+
         BufferedSource configSource =
                 Okio.buffer(Okio.source(mResources.openRawResource(R.raw.auth_config)));
         Buffer configData = new Buffer();
@@ -187,8 +192,6 @@ public final class Configuration {
                     "Unable to parse configuration: " + ex.getMessage());
         }
 
-        mConfigHash = configData.sha256().base64();
-
         mAuthEndpointUri = getRequiredConfigWebUri("authorization_endpoint_uri");
         mTokenEndpointUri = getRequiredConfigWebUri("token_endpoint_uri");
         mUserInfoEndpointUri = getRequiredConfigWebUri("user_info_endpoint_uri");
@@ -202,11 +205,23 @@ public final class Configuration {
             mRegistrationEndpointUri = getRequiredConfigWebUri("registration_endpoint_uri");
         }
 
+        mConfigHash = configData.sha256().base64() + encodeSHA1Base64(mClientId + mRedirectUri + mScope);
+
         if (!isRedirectUriRegistered()) {
             throw new InvalidConfigurationException(
                     "Error with redirect_uri. Ensure that the appAuthRedirectScheme in your build.gradle file "
                             + "is correctly configured and that it matches the redirect_uri in the SpotifyAuthorizationClient.Builder");
         }
+    }
+
+    private String encodeSHA1Base64(String toEncode) throws NoSuchAlgorithmException {
+        String result;
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        md.update(toEncode.getBytes(Charset.forName("UTF-8")), 0, toEncode.length());
+        byte[] sha1hash = md.digest();
+        result = Base64.encodeToString(sha1hash, Base64.DEFAULT);
+        result = result.substring(0, result.length() - 1);
+        return result;
     }
 
     private String buildScope(String[] scopes) {

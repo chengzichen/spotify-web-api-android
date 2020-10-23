@@ -55,6 +55,16 @@ public final class LoginActivity extends BaseSpotifyActivity {
         }
 
         displayAuthOptions();
+
+        if (spotifyAuthClient.isAuthorized()) {
+            if (spotifyAuthClient.getNeedsTokenRefresh()) {
+                spotifyAuthClient.refreshAccessToken();
+            } else {
+                showTokenActivity();
+            }
+        } else {
+            spotifyAuthClient.authorize(this, REQUEST_CODE_AUTHORIZATION);
+        }
     }
 
     @MainThread
@@ -131,6 +141,16 @@ public final class LoginActivity extends BaseSpotifyActivity {
     public void onAuthorizationSucceed(@Nullable TokenResponse tokenResponse, @Nullable UserPrivate user) {
         Toast.makeText(this, "AccessToken: " + tokenResponse.accessToken, Toast.LENGTH_SHORT).show();
 
+        showTokenActivity();
+    }
+
+    @Override
+    public void onRefreshAccessTokenSucceed(@Nullable TokenResponse tokenResponse, @Nullable UserPrivate user) {
+        super.onRefreshAccessTokenSucceed(tokenResponse, user);
+        showTokenActivity();
+    }
+
+    private void showTokenActivity() {
         Intent intent = new Intent(this, TokenActivity.class);
         startActivity(intent);
         finish();

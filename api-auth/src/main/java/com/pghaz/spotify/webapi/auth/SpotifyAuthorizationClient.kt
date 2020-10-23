@@ -118,8 +118,8 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
 
     class Builder(clientId: String?, redirectUri: String?) {
 
-        private lateinit var mClientId: String
-        private lateinit var mRedirectUri: String
+        private var mClientId: String
+        private var mRedirectUri: String
 
         private var mScopes: Array<String?> = emptyArray()
         private var mCustomTabColor: Int = Color.BLACK
