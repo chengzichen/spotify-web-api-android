@@ -1,6 +1,11 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+project.group = POM_BINTRAY_NAME
+version = POM_VERSION
 
 apply from: rootProject.file('release.gradle')
 
