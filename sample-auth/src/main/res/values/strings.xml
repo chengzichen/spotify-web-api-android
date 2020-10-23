@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">sample-auth</string>
+    <string name="app_name">Auth Spotify</string>
+
+    <string name="spotify_client_id" translatable="false">7cb7f4b08ff748cc9f19c84cc627f9d9</string>
+    <string name="spotify_redirect_uri" translatable="false">com.pghaz.revery://connect</string>
+
     <string name="auth_granted">Authorization granted</string>
     <string name="intro_header">OpenID AppAuth Demo</string>
     <string name="openid_logo_content_description">AppAuth Logo</string>

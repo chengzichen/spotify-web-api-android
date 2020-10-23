@@ -25,7 +25,6 @@ import androidx.annotation.MainThread;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
-import com.pghaz.spotify.webapi.activity.BaseSpotifyActivity;
 
 import net.openid.appauth.TokenResponse;
 

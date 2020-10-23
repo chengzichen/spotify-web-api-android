@@ -13,7 +13,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        // Make sure this is consistent with the redirect URI scheme used in res/raw/client_config.json
+        // Make sure this is consistent with the redirect URI scheme used in SpotifyAuthorizationClient.Builder
         manifestPlaceholders = [
                 'appAuthRedirectScheme': 'com.pghaz.revery'
         ]

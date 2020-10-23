@@ -21,6 +21,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -40,7 +41,7 @@ import okio.Okio;
 
 
 /**
- * Reads and validates the app configuration from `res/raw/auth_config.json` and `res/raw/client_config.json`.
+ * Reads and validates the app configuration from `res/raw/auth_config.json`.
  * Configuration changes are detected by comparing the hash of the last known configuration to the read
  * configuration. When a configuration change is detected, the app state is reset.
  */
@@ -66,25 +67,25 @@ public final class Configuration {
     private Uri mTokenEndpointUri;
     private Uri mRegistrationEndpointUri;
     private Uri mUserInfoEndpointUri;
-    private String mCustomTabsColor;
+    @ColorInt
+    private int mCustomTabsColor;
 
-    public Configuration(Context context) {
+    private Configuration(Context context, String clientId, String redirectUri, String[] scopes, @ColorInt int colorResId) {
         mContext = context;
         mPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         mResources = context.getResources();
 
         try {
-            readConfiguration();
-            readClientConfiguration(context);
-        } catch (InvalidConfigurationException | IOException ex) {
+            readConfiguration(clientId, redirectUri, scopes, colorResId);
+        } catch (InvalidConfigurationException ex) {
             mConfigError = ex.getMessage();
         }
     }
 
-    public static Configuration getInstance(Context context) {
+    public static Configuration getInstance(Context context, String clientId, String redirectUri, String[] scopes, @ColorInt int colorResId) {
         Configuration config = sInstance.get();
         if (config == null) {
-            config = new Configuration(context);
+            config = new Configuration(context, clientId, redirectUri, scopes, colorResId);
             sInstance = new WeakReference<>(config);
         }
 
@@ -161,8 +162,8 @@ public final class Configuration {
         return mUserInfoEndpointUri;
     }
 
-    @Nullable
-    public String getCustomTabsColor() {
+    @ColorInt
+    public int getCustomTabsColor() {
         return mCustomTabsColor;
     }
 
@@ -170,7 +171,8 @@ public final class Configuration {
         return DefaultConnectionBuilder.INSTANCE;
     }
 
-    private void readConfiguration() throws InvalidConfigurationException {
+    private void readConfiguration(String clientId, String redirectUri,
+                                   String[] scopes, @ColorInt int colorResId) throws InvalidConfigurationException {
         BufferedSource configSource =
                 Okio.buffer(Okio.source(mResources.openRawResource(R.raw.auth_config)));
         Buffer configData = new Buffer();
@@ -190,32 +192,11 @@ public final class Configuration {
         mAuthEndpointUri = getRequiredConfigWebUri("authorization_endpoint_uri");
         mTokenEndpointUri = getRequiredConfigWebUri("token_endpoint_uri");
         mUserInfoEndpointUri = getRequiredConfigWebUri("user_info_endpoint_uri");
-    }
 
-    private void readClientConfiguration(Context context) throws InvalidConfigurationException, IOException {
-        BufferedSource configSource =
-                Okio.buffer(Okio.source(context.getAssets().open("client_config.json")));
-        Buffer configData = new Buffer();
-        try {
-            configSource.readAll(configData);
-            mConfigJson = new JSONObject(configData.readString(Charset.forName("UTF-8")));
-        } catch (IOException ex) {
-            throw new InvalidConfigurationException(
-                    "Failed to read configuration: " + ex.getMessage());
-        } catch (JSONException ex) {
-            throw new InvalidConfigurationException(
-                    "Unable to parse configuration: " + ex.getMessage());
-        }
-
-        mConfigHash += configData.sha256().base64();
-
-        mClientId = getRequiredConfigString("client_id");
-        mRedirectUri = getRequiredConfigUri("redirect_uri");
-        mScope = getConfigString("authorization_scope");
-        mCustomTabsColor = getConfigString("custom_tabs_color");
-        if (mCustomTabsColor == null) {
-            mCustomTabsColor = "#000000";
-        }
+        mClientId = clientId;
+        mRedirectUri = Uri.parse(redirectUri);
+        mScope = buildScope(scopes);
+        mCustomTabsColor = colorResId;
 
         if (mClientId == null) {
             mRegistrationEndpointUri = getRequiredConfigWebUri("registration_endpoint_uri");
@@ -223,10 +204,20 @@ public final class Configuration {
 
         if (!isRedirectUriRegistered()) {
             throw new InvalidConfigurationException(
-                    "redirect_uri is not handled by any activity in this app! "
-                            + "Ensure that the appAuthRedirectScheme in your build.gradle file "
-                            + "is correctly configured and that it matches the redirect_uri in the client_config.json file");
+                    "Error with redirect_uri. Ensure that the appAuthRedirectScheme in your build.gradle file "
+                            + "is correctly configured and that it matches the redirect_uri in the SpotifyAuthorizationClient.Builder");
         }
+    }
+
+    private String buildScope(String[] scopes) {
+        StringBuilder builder = new StringBuilder();
+
+        for (String scope : scopes) {
+            builder.append(scope);
+            builder.append(" ");
+        }
+
+        return builder.toString().trim();
     }
 
     @Nullable

@@ -1,8 +1,9 @@
-package com.pghaz.spotify.webapi.activity
+package com.pghaz.spotify.webapi.auth.sample
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.pghaz.spotify.webapi.auth.SpotifyAuthorizationCallback
 import com.pghaz.spotify.webapi.auth.SpotifyAuthorizationClient
 import io.github.kaaes.spotify.webapi.core.models.UserPrivate
@@ -11,12 +12,25 @@ import net.openid.appauth.TokenResponse
 abstract class BaseSpotifyActivity : AppCompatActivity(), SpotifyAuthorizationCallback.Authorize,
         SpotifyAuthorizationCallback.RefreshToken {
 
-    val spotifyAuthClient = SpotifyAuthorizationClient()
+    lateinit var spotifyAuthClient: SpotifyAuthorizationClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        spotifyAuthClient = SpotifyAuthorizationClient.Builder(
+                getString(R.string.spotify_client_id),
+                getString(R.string.spotify_redirect_uri))
+                .setScopes(arrayOf(
+                        "user-top-read",
+                        "user-read-recently-played"
+                ))
+                .setFetchUserAfterAuthorization(true)
+                .setCustomTabColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                .build(this)
+
         spotifyAuthClient.setDebugMode(true)
-        spotifyAuthClient.init(this, true, this, this)
+        spotifyAuthClient.setAuthorizationCallback(this)
+        spotifyAuthClient.setRefreshTokenCallback(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

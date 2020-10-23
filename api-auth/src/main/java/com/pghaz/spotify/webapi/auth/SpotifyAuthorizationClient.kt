@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
+import androidx.annotation.ColorInt
 import androidx.annotation.MainThread
 import androidx.annotation.Nullable
 import androidx.annotation.WorkerThread
@@ -36,8 +37,10 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
-class SpotifyAuthorizationClient {
-
+class SpotifyAuthorizationClient private constructor(context: Context, clientId: String,
+                                                     redirectUri: String, scopes: Array<String?>,
+                                                     @ColorInt colorInt: Int,
+                                                     private var fetchUserAfterAuthorization: Boolean) {
     companion object {
         private const val TAG = "SpotifyAuthClient"
 
@@ -61,6 +64,93 @@ class SpotifyAuthorizationClient {
             const val UTM_MEDIUM = "utm_medium"
             const val UTM_CAMPAIGN = "utm_campaign"
         }
+
+        /**
+         * Opens Spotify in the Play Store or browser.
+         *
+         * @param contextActivity The activity that should start the intent to open the download page.
+         */
+        fun openDownloadSpotifyActivity(contextActivity: Activity) {
+            openDownloadSpotifyActivity(contextActivity, DEFAULT_CAMPAIGN)
+        }
+
+        /**
+         * Opens Spotify in the Play Store or browser.
+         *
+         * @param contextActivity The activity that should start the intent to open the download page.
+         * @param campaign A Spotify-provided campaign ID. `DEFAULT_CAMPAIGN` if not provided.
+         */
+        fun openDownloadSpotifyActivity(contextActivity: Activity, campaign: String?) {
+            val uriBuilder = Uri.Builder()
+
+            if (isAvailable(contextActivity, Intent(Intent.ACTION_VIEW, Uri.parse(MARKET_VIEW_PATH)))) {
+                uriBuilder.scheme(MARKET_SCHEME)
+                        .appendPath(MARKET_PATH)
+            } else {
+                uriBuilder.scheme(PLAY_STORE_SCHEME)
+                        .authority(PLAY_STORE_AUTHORITY)
+                        .appendEncodedPath(PLAY_STORE_PATH)
+            }
+
+            uriBuilder.appendQueryParameter(PlayStoreParams.ID, SPOTIFY_ID)
+
+            val referrerBuilder = Uri.Builder()
+            referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_SOURCE, SPOTIFY_SDK)
+                    .appendQueryParameter(PlayStoreParams.UTM_MEDIUM, ANDROID_SDK)
+
+            if (TextUtils.isEmpty(campaign)) {
+                referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_CAMPAIGN, DEFAULT_CAMPAIGN)
+            } else {
+                referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_CAMPAIGN, campaign)
+            }
+
+            uriBuilder.appendQueryParameter(PlayStoreParams.REFERRER, referrerBuilder.build().encodedQuery)
+
+            contextActivity.startActivity(Intent(Intent.ACTION_VIEW, uriBuilder.build()))
+        }
+
+        private fun isAvailable(context: Context, intent: Intent): Boolean {
+            val packageManager = context.packageManager
+            val list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            return list.size > 0
+        }
+    }
+
+    class Builder(clientId: String?, redirectUri: String?) {
+
+        private lateinit var mClientId: String
+        private lateinit var mRedirectUri: String
+
+        private var mScopes: Array<String?> = emptyArray()
+        private var mCustomTabColor: Int = Color.BLACK
+        private var mFetchUserAfterAuthorization: Boolean = false
+
+        init {
+            requireNotNull(clientId) { "Client ID can't be null" }
+            require(!(redirectUri == null || redirectUri.isEmpty())) { "Redirect URI can't be null or empty" }
+            mClientId = clientId
+            mRedirectUri = redirectUri
+        }
+
+        fun setScopes(scopes: Array<String?>): Builder {
+            mScopes = scopes
+            return this
+        }
+
+        fun setCustomTabColor(@ColorInt colorInt: Int): Builder {
+            mCustomTabColor = colorInt
+            return this
+        }
+
+        fun setFetchUserAfterAuthorization(fetchUserAfterAuthorization: Boolean): Builder {
+            mFetchUserAfterAuthorization = fetchUserAfterAuthorization
+            return this
+        }
+
+        fun build(context: Context): SpotifyAuthorizationClient {
+            return SpotifyAuthorizationClient(context, mClientId, mRedirectUri, mScopes,
+                    mCustomTabColor, mFetchUserAfterAuthorization)
+        }
     }
 
     private val mClientId = AtomicReference<String>()
@@ -71,21 +161,38 @@ class SpotifyAuthorizationClient {
     private var mAuthIntentLatch = CountDownLatch(1)
     private var handler: Handler? = Handler(Looper.getMainLooper())
 
-    private lateinit var mGson: Gson
+    private val mGson: Gson = Gson()
+    private val mAuthStateManager: AuthStateManager
+    private val mConfiguration: Configuration
     private lateinit var mAuthService: AuthorizationService
-    private lateinit var mAuthStateManager: AuthStateManager
-    private lateinit var mConfiguration: Configuration
 
     private val mBrowserMatcher: BrowserMatcher = BrowserWhitelist(
             VersionedBrowserMatcher.CHROME_CUSTOM_TAB,
             VersionedBrowserMatcher.SAMSUNG_CUSTOM_TAB)
 
-    private var fetchUserAfterAuthorization = false
     private var authorizationCallback: SpotifyAuthorizationCallback.Authorize? = null
     private var refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken? = null
 
     private var requestCode = -42
     private var mIsDebug: Boolean = false
+
+    init {
+        mAuthStateManager = AuthStateManager.getInstance(context, mGson)
+        mConfiguration = Configuration.getInstance(context, clientId, redirectUri, scopes, colorInt)
+
+        if (!mConfiguration.isValid) {
+            throw Configuration.InvalidConfigurationException(mConfiguration.configurationError)
+        }
+
+        if (hasConfigurationChanged()) {
+            // discard any existing authorization state due to the change of configuration
+            if (mIsDebug) Log.i(TAG, "Configuration change detected, discarding old state")
+            mAuthStateManager.replaceState(AuthState())
+            mConfiguration.acceptConfiguration()
+        }
+
+        initializeAppAuth(context)
+    }
 
     fun setDebugMode(enabled: Boolean) {
         mIsDebug = enabled
@@ -99,30 +206,12 @@ class SpotifyAuthorizationClient {
         }
     }
 
-    fun init(context: Context, fetchUserAfterAuthorization: Boolean,
-             authorizationCallback: SpotifyAuthorizationCallback.Authorize?,
-             refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken?) {
-
-        mGson = Gson()
-        mAuthStateManager = AuthStateManager.getInstance(context, mGson)
-        mConfiguration = Configuration.getInstance(context)
-
-        this.fetchUserAfterAuthorization = fetchUserAfterAuthorization
+    fun setAuthorizationCallback(authorizationCallback: SpotifyAuthorizationCallback.Authorize?) {
         this.authorizationCallback = authorizationCallback
+    }
+
+    fun setRefreshTokenCallback(refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken?) {
         this.refreshTokenCallback = refreshTokenCallback
-
-        if (!mConfiguration.isValid) {
-            throw Configuration.InvalidConfigurationException(mConfiguration.configurationError)
-        }
-
-        if (mConfiguration.hasConfigurationChanged()) {
-            // discard any existing authorization state due to the change of configuration
-            if (mIsDebug) Log.i(TAG, "Configuration change detected, discarding old state")
-            mAuthStateManager.replaceState(AuthState())
-            mConfiguration.acceptConfiguration()
-        }
-
-        initializeAppAuth(context)
     }
 
     fun authorize(context: Context, requestCode: Int) {
@@ -241,7 +330,7 @@ class SpotifyAuthorizationClient {
         mExecutor.execute {
             if (mIsDebug) Log.i(TAG, "Warming up browser instance for auth request")
             val intentBuilder = mAuthService.createCustomTabsIntentBuilder(mAuthRequest.get().toUri())
-            intentBuilder.setToolbarColor(Color.parseColor(mConfiguration.customTabsColor))
+            intentBuilder.setToolbarColor(mConfiguration.customTabsColor)
             mAuthIntent.set(intentBuilder.build())
             mAuthIntentLatch.countDown()
         }
@@ -468,55 +557,5 @@ class SpotifyAuthorizationClient {
 
             runBlockOnMainThread { authorizationCallback?.onAuthorizationSucceed(mAuthStateManager.currentState.lastTokenResponse, getCurrentUser()) }
         }
-    }
-
-    /**
-     * Opens Spotify in the Play Store or browser.
-     *
-     * @param contextActivity The activity that should start the intent to open the download page.
-     */
-    fun openDownloadSpotifyActivity(contextActivity: Activity) {
-        openDownloadSpotifyActivity(contextActivity, DEFAULT_CAMPAIGN)
-    }
-
-    /**
-     * Opens Spotify in the Play Store or browser.
-     *
-     * @param contextActivity The activity that should start the intent to open the download page.
-     * @param campaign A Spotify-provided campaign ID. `DEFAULT_CAMPAIGN` if not provided.
-     */
-    fun openDownloadSpotifyActivity(contextActivity: Activity, campaign: String?) {
-        val uriBuilder = Uri.Builder()
-
-        if (isAvailable(contextActivity, Intent(Intent.ACTION_VIEW, Uri.parse(MARKET_VIEW_PATH)))) {
-            uriBuilder.scheme(MARKET_SCHEME)
-                    .appendPath(MARKET_PATH)
-        } else {
-            uriBuilder.scheme(PLAY_STORE_SCHEME)
-                    .authority(PLAY_STORE_AUTHORITY)
-                    .appendEncodedPath(PLAY_STORE_PATH)
-        }
-
-        uriBuilder.appendQueryParameter(PlayStoreParams.ID, SPOTIFY_ID)
-
-        val referrerBuilder = Uri.Builder()
-        referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_SOURCE, SPOTIFY_SDK)
-                .appendQueryParameter(PlayStoreParams.UTM_MEDIUM, ANDROID_SDK)
-
-        if (TextUtils.isEmpty(campaign)) {
-            referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_CAMPAIGN, DEFAULT_CAMPAIGN)
-        } else {
-            referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_CAMPAIGN, campaign)
-        }
-
-        uriBuilder.appendQueryParameter(PlayStoreParams.REFERRER, referrerBuilder.build().encodedQuery)
-
-        contextActivity.startActivity(Intent(Intent.ACTION_VIEW, uriBuilder.build()))
-    }
-
-    private fun isAvailable(context: Context, intent: Intent): Boolean {
-        val packageManager = context.packageManager
-        val list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return list.size > 0
     }
 }
