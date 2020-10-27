@@ -9,8 +9,8 @@ import retrofit2.Response;
 
 public class SpotifyError extends Exception {
 
-    protected static final int ERROR_UNEXPECTED = -1;
-    protected static final int ERROR_NETWORK = -2;
+    public static final int ERROR_UNEXPECTED = -1;
+    public static final int ERROR_NETWORK = -2;
 
     public final ErrorDetails details;
 
