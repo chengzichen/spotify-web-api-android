@@ -53,9 +53,9 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
         private const val PLAY_STORE_PATH = "store/apps/details"
 
         private const val SPOTIFY_ID = "com.spotify.music"
-        private const val SPOTIFY_SDK = "spotify-sdk"
-        private const val ANDROID_SDK = "android-sdk"
-        private const val DEFAULT_CAMPAIGN = "android-sdk"
+        private const val REVERY_APP = "revery"
+        private const val REVERY_ANDROID = "android"
+        private const val DEFAULT_CAMPAIGN = "com.pghaz.revery"
 
         internal object PlayStoreParams {
             const val ID = "id"
@@ -95,8 +95,8 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
             uriBuilder.appendQueryParameter(PlayStoreParams.ID, SPOTIFY_ID)
 
             val referrerBuilder = Uri.Builder()
-            referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_SOURCE, SPOTIFY_SDK)
-                    .appendQueryParameter(PlayStoreParams.UTM_MEDIUM, ANDROID_SDK)
+            referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_SOURCE, REVERY_APP)
+                    .appendQueryParameter(PlayStoreParams.UTM_MEDIUM, REVERY_ANDROID)
 
             if (TextUtils.isEmpty(campaign)) {
                 referrerBuilder.appendQueryParameter(PlayStoreParams.UTM_CAMPAIGN, DEFAULT_CAMPAIGN)
@@ -113,6 +113,16 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
             val packageManager = context.packageManager
             val list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
             return list.size > 0
+        }
+
+        fun isSpotifyInstalled(context: Context): Boolean {
+            val packageManager: PackageManager = context.packageManager
+            return try {
+                packageManager.getPackageInfo(SPOTIFY_ID, 0)
+                true
+            } catch (e: PackageManager.NameNotFoundException) {
+                false
+            }
         }
     }
 
