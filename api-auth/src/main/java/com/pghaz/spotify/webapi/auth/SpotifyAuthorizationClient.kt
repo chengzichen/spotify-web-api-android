@@ -504,6 +504,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
                 clearedState.update(currentState.lastRegistrationResponse)
             }
             mAuthStateManager.replaceState(clearedState)
+            mAuthStateManager.updateUser(null)
         }
     }
 
