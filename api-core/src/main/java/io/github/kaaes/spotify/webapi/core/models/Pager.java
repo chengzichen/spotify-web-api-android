@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @param <T> expected object that is paged
  */
-public class Pager<T> implements Parcelable  {
+public class Pager<T extends Parcelable> implements Parcelable {
     public String href;
     public List<T> items;
     public int limit;
@@ -28,7 +28,16 @@ public class Pager<T> implements Parcelable  {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(href);
-        dest.writeList(items);
+
+        if (items == null || items.size() == 0)
+            dest.writeInt(0);
+        else {
+            dest.writeInt(items.size());
+            final Class<?> objectsType = items.get(0).getClass();
+            dest.writeSerializable(objectsType);
+            dest.writeList(items);
+        }
+
         dest.writeInt(limit);
         dest.writeString(next);
         dest.writeInt(offset);
@@ -41,7 +50,16 @@ public class Pager<T> implements Parcelable  {
 
     protected Pager(Parcel in) {
         this.href = in.readString();
-        this.items = in.readArrayList(ArrayList.class.getClassLoader());
+
+        int size = in.readInt();
+        if (size == 0) {
+            items = new ArrayList<>();
+        } else {
+            Class<?> type = (Class<?>) in.readSerializable();
+            items = new ArrayList<>(size);
+            in.readList(items, type.getClassLoader());
+        }
+
         this.limit = in.readInt();
         this.next = in.readString();
         this.offset = in.readInt();
