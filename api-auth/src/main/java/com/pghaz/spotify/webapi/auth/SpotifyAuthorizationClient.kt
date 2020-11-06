@@ -180,8 +180,8 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
             VersionedBrowserMatcher.CHROME_CUSTOM_TAB,
             VersionedBrowserMatcher.SAMSUNG_CUSTOM_TAB)
 
-    private var authorizationCallback: SpotifyAuthorizationCallback.Authorize? = null
-    private var refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken? = null
+    private var authorizationCallbacks: ArrayList<SpotifyAuthorizationCallback.Authorize> = ArrayList()
+    private var refreshTokenCallbacks: ArrayList<SpotifyAuthorizationCallback.RefreshToken> = ArrayList()
 
     private var requestCode = -42
     private var mIsDebug: Boolean = false
@@ -216,12 +216,20 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
         }
     }
 
-    fun setAuthorizationCallback(authorizationCallback: SpotifyAuthorizationCallback.Authorize?) {
-        this.authorizationCallback = authorizationCallback
+    fun addAuthorizationCallback(authorizationCallback: SpotifyAuthorizationCallback.Authorize) {
+        this.authorizationCallbacks.add(authorizationCallback)
     }
 
-    fun setRefreshTokenCallback(refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken?) {
-        this.refreshTokenCallback = refreshTokenCallback
+    fun addRefreshTokenCallback(refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken) {
+        this.refreshTokenCallbacks.add(refreshTokenCallback)
+    }
+
+    fun removeAuthorizationCallback(authorizationCallback: SpotifyAuthorizationCallback.Authorize) {
+        this.authorizationCallbacks.remove(authorizationCallback)
+    }
+
+    fun removeRefreshTokenCallback(refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken) {
+        this.refreshTokenCallbacks.remove(refreshTokenCallback)
     }
 
     fun authorize(context: Context, requestCode: Int) {
@@ -301,7 +309,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
 
     @MainThread
     private fun startAuth(context: Context, requestCode: Int, completionPendingIntent: PendingIntent?, cancelPendingIntent: PendingIntent?) {
-        authorizationCallback?.onAuthorizationStarted()
+        authorizationCallbacks.forEach { it.onAuthorizationStarted() }
         mExecutor.submit { doAuth(context, requestCode, completionPendingIntent, cancelPendingIntent) }
     }
 
@@ -387,13 +395,13 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (this.requestCode == requestCode) {
             if (resultCode == Activity.RESULT_CANCELED) {
-                authorizationCallback?.onAuthorizationCanceled()
+                authorizationCallbacks.forEach { it.onAuthorizationCanceled() }
                 return
             }
 
-            data?.let {
-                val response = AuthorizationResponse.fromIntent(it)
-                val ex = AuthorizationException.fromIntent(it)
+            data?.let { intent ->
+                val response = AuthorizationResponse.fromIntent(intent)
+                val ex = AuthorizationException.fromIntent(intent)
 
                 if (response != null || ex != null) {
                     mAuthStateManager.updateAfterAuthorization(response, ex)
@@ -406,10 +414,10 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
                         exchangeAuthorizationCode(response)
                     }
                     ex != null -> {
-                        authorizationCallback?.onAuthorizationRefused("Authorization flow failed: " + ex.message)
+                        authorizationCallbacks.forEach { it.onAuthorizationRefused("Authorization flow failed: " + ex.message) }
                     }
                     else -> {
-                        authorizationCallback?.onAuthorizationFailed("No authorization state retained - reauthorization required")
+                        authorizationCallbacks.forEach { it.onAuthorizationFailed("No authorization state retained - reauthorization required") }
                     }
                 }
             }
@@ -436,7 +444,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
 
     @MainThread
     fun refreshAccessToken() {
-        refreshTokenCallback?.onRefreshAccessTokenStarted()
+        refreshTokenCallbacks.forEach { it.onRefreshAccessTokenStarted() }
 
         performTokenRequest(mAuthStateManager.currentState.createTokenRefreshRequest()) { tokenResponse: TokenResponse?, authException: AuthorizationException? ->
             handleRefreshAccessTokenResponse(tokenResponse, authException)
@@ -447,7 +455,9 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
     private fun handleRefreshAccessTokenResponse(tokenResponse: TokenResponse?, authException: AuthorizationException?) {
         mAuthStateManager.updateAfterTokenResponse(tokenResponse, authException)
 
-        runBlockOnMainThread { refreshTokenCallback?.onRefreshAccessTokenSucceed(mAuthStateManager.currentState.lastTokenResponse, getCurrentUser()) }
+        runBlockOnMainThread {
+            refreshTokenCallbacks.forEach { it.onRefreshAccessTokenSucceed(mAuthStateManager.currentState.lastTokenResponse, getCurrentUser()) }
+        }
     }
 
     @MainThread
@@ -459,7 +469,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
         } catch (ex: UnsupportedAuthenticationMethod) {
             if (mIsDebug) Log.d(TAG, "Token request cannot be made, client authentication " +
                     "for the token endpoint could not be constructed (%s)", ex)
-            authorizationCallback?.onAuthorizationFailed("Client authentication method is unsupported")
+            authorizationCallbacks.forEach { it.onAuthorizationFailed("Client authentication method is unsupported") }
             return
         }
 
@@ -481,12 +491,12 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
             val message = ("Authorization Code exchange failed"
                     + if (authException != null) authException.error else "")
 
-            runBlockOnMainThread { authorizationCallback?.onAuthorizationRefused(message) }
+            runBlockOnMainThread { authorizationCallbacks.forEach { it.onAuthorizationRefused(message) } }
         } else {
             if (fetchUserAfterAuthorization) {
                 runBlockOnMainThread { fetchUser() }
             } else {
-                runBlockOnMainThread { authorizationCallback?.onAuthorizationSucceed(mAuthStateManager.currentState.lastTokenResponse, getCurrentUser()) }
+                runBlockOnMainThread { authorizationCallbacks.forEach { it.onAuthorizationSucceed(mAuthStateManager.currentState.lastTokenResponse, getCurrentUser()) } }
             }
         }
     }
@@ -528,7 +538,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
         if (ex != null) {
             Log.e(TAG, "Token refresh failed when fetching user info")
             mAuthStateManager.updateUser(null)
-            runBlockOnMainThread { authorizationCallback?.onAuthorizationFailed("Failed while fetching user") }
+            runBlockOnMainThread { authorizationCallbacks.forEach { it.onAuthorizationFailed("Failed while fetching user") } }
             return
         }
 
@@ -542,7 +552,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
         } catch (malformedURLException: MalformedURLException) {
             Log.e(TAG, "Failed to construct user info endpoint URL", malformedURLException)
             mAuthStateManager.updateUser(null)
-            authorizationCallback?.onAuthorizationFailed("Failed to construct user info endpoint URL")
+            authorizationCallbacks.forEach { it.onAuthorizationFailed("Failed to construct user info endpoint URL") }
             return
         }
 
@@ -560,13 +570,13 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
 
             } catch (ioException: IOException) {
                 Log.e(TAG, "Network error when querying user info endpoint", ioException)
-                runBlockOnMainThread { authorizationCallback?.onAuthorizationFailed("Network error") }
+                runBlockOnMainThread { authorizationCallbacks.forEach { it.onAuthorizationFailed("Network error") } }
             } catch (jsonException: JSONException) {
                 Log.e(TAG, "Failed to parse user fetch response")
-                runBlockOnMainThread { authorizationCallback?.onAuthorizationFailed("Failed to parse user fetch response") }
+                runBlockOnMainThread { authorizationCallbacks.forEach { it.onAuthorizationFailed("Failed to parse user fetch response") } }
             }
 
-            runBlockOnMainThread { authorizationCallback?.onAuthorizationSucceed(mAuthStateManager.currentState.lastTokenResponse, getCurrentUser()) }
+            runBlockOnMainThread { authorizationCallbacks.forEach { it.onAuthorizationSucceed(mAuthStateManager.currentState.lastTokenResponse, getCurrentUser()) } }
         }
     }
 }

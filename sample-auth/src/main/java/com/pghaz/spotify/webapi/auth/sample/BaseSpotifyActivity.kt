@@ -29,8 +29,8 @@ abstract class BaseSpotifyActivity : AppCompatActivity(), SpotifyAuthorizationCa
                 .build(this)
 
         spotifyAuthClient.setDebugMode(true)
-        spotifyAuthClient.setAuthorizationCallback(this)
-        spotifyAuthClient.setRefreshTokenCallback(this)
+        spotifyAuthClient.addAuthorizationCallback(this)
+        spotifyAuthClient.addRefreshTokenCallback(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
