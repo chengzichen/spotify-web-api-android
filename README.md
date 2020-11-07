@@ -101,7 +101,8 @@ To handle Spotify authentication, authorization and refresh token, the library u
 
 ### Step 1: add your redirect URI scheme into your app build.gradle
 
-´´´android {
+´´´
+    android {
        ...
     
     defaultConfig {
@@ -116,7 +117,7 @@ To handle Spotify authentication, authorization and refresh token, the library u
     }
     ...
     }
-    ´´´
+´´´
 
 ### Step 2: initialize SpotifyAuthorizationClient
 
