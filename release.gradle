@@ -9,17 +9,15 @@ android.libraryVariants.all { variant ->
 
         source = variant.javaCompile.source
         ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-        classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
+        doFirst { classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar) }
     }
 }
 
 // make proper name for 'aar' file
 android.libraryVariants.all { variant ->
-    variant.outputs.each { output ->
-        def outputFile = output.outputFile
-        if (outputFile != null && outputFile.name.endsWith('.aar')) {
-            def fileName = "${BASE_NAME}-${version}.aar"
-            output.outputFile = new File(outputFile.parent, fileName)
+    variant.variantData.outputFactory.apkDataList.each { apkData ->
+        if (apkData.outputFileName.endsWith('.aar')) {
+            apkData.outputFileName = "spotify-${project.name}-${version}.aar"
         }
     }
 }
@@ -31,13 +29,13 @@ jacoco {
     toolVersion = "0.7.1.201405082137"
 }
 
-def coverageSourceDirs = ['src/main/java' ]
+def coverageSourceDirs = ['src/main/java']
 
-task jacocoTestReport(type:JacocoReport, dependsOn: "test") {
+task jacocoTestReport(type: JacocoReport, dependsOn: "test") {
     group = "Reporting"
     description = "Generate Jacoco coverage reports"
 
-    classDirectories = fileTree(
+    classDirectories.from = fileTree(
             dir: 'build/intermediates/classes/debug',
             excludes: ['**/R.class',
                        '**/R$*.class',
@@ -46,9 +44,9 @@ task jacocoTestReport(type:JacocoReport, dependsOn: "test") {
                        '**/Manifest*.*']
     )
 
-    additionalSourceDirs = files(coverageSourceDirs)
-    sourceDirectories = files(coverageSourceDirs)
-    executionData = files('build/jacoco/testDebug.exec')
+    additionalSourceDirs.from = files(coverageSourceDirs)
+    sourceDirectories.from = files(coverageSourceDirs)
+    executionData.from = files('build/jacoco/testDebug.exec')
 
     reports {
         xml.enabled = true
