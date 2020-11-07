@@ -44,10 +44,6 @@ import io.github.kaaes.spotify.webapi.core.models.UserPublic;
  */
 public class TokenActivity extends BaseSpotifyActivity {
 
-    private static final String TAG = "TokenActivity";
-
-    private static final String KEY_USER_INFO = "userInfo";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,43 +55,23 @@ public class TokenActivity extends BaseSpotifyActivity {
         }
 
         setContentView(R.layout.activity_token);
-
-/*        displayLoading("Restoring state...");
-
-        if (savedInstanceState != null) {
-            try {
-                String savedUserInfoJson = savedInstanceState.getString(KEY_USER_INFO);
-                if (savedUserInfoJson != null) {
-                    mUserInfoJson.set(new JSONObject(savedUserInfoJson));
-                } else {
-                    mUserInfoJson.set(null);
-                }
-            } catch (JSONException ex) {
-                Log.e(TAG, "Failed to parse saved user info JSON, discarding", ex);
-            }
-        }*/
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        if (getSpotifyAuthClient().isAuthorized()) {
-            displayAuthorized(getSpotifyAuthClient().getLastTokenResponse(), getSpotifyAuthClient().getCurrentUser());
+        if (spotifyAuthClient.isAuthorized()) {
+            if (spotifyAuthClient.getNeedsTokenRefresh()) {
+                spotifyAuthClient.refreshAccessToken(); // Check onRefreshAccessTokenSucceed() called for result
+            } else {
+                // do your stuff here
+                Toast.makeText(this, "User logged in and token valid", Toast.LENGTH_SHORT).show();
+                displayAuthorized(getSpotifyAuthClient().getLastTokenResponse(), getSpotifyAuthClient().getCurrentUser());
+            }
         } else {
-            displayNotAuthorized("");
+            displayNotAuthorized("Refused by user");
         }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle state) {
-        // user info is retained to survive activity restarts, such as when rotating the
-        // device or switching apps. This isn't essential, but it helps provide a less
-        // jarring UX when these events occur - data does not just disappear from the view.
-      /*  if (mUserInfoJson.get() != null) {
-            state.putString(KEY_USER_INFO, mUserInfoJson.toString());
-        }*/
-        super.onSaveInstanceState(state);
     }
 
     @MainThread
@@ -108,7 +84,7 @@ public class TokenActivity extends BaseSpotifyActivity {
     }
 
     @MainThread
-    private void displayAuthorized(TokenResponse tokenResponse, UserPublic currentUser) {
+    private void displayAuthorized(@Nullable TokenResponse tokenResponse, UserPublic currentUser) {
         findViewById(R.id.authorized).setVisibility(View.VISIBLE);
         findViewById(R.id.not_authorized).setVisibility(View.GONE);
         findViewById(R.id.loading_container).setVisibility(View.GONE);
@@ -172,14 +148,6 @@ public class TokenActivity extends BaseSpotifyActivity {
     }
 
     @MainThread
-    private void showSnackbar(String message) {
-        Snackbar.make(findViewById(R.id.coordinator),
-                message,
-                Snackbar.LENGTH_SHORT)
-                .show();
-    }
-
-    @MainThread
     private void signOut() {
         getSpotifyAuthClient().logOut();
 
@@ -191,21 +159,25 @@ public class TokenActivity extends BaseSpotifyActivity {
 
     @Override
     public void onAuthorizationStarted() {
+        super.onAuthorizationStarted();
         displayLoading("on Authorization Started");
     }
 
     @Override
-    public void onAuthorizationCanceled() {
+    public void onAuthorizationCancelled() {
+        super.onAuthorizationCancelled();
         displayNotAuthorized("onAuthorizationCanceled");
     }
 
     @Override
     public void onAuthorizationFailed(@Nullable String error) {
+        super.onAuthorizationFailed(error);
         displayNotAuthorized(error);
     }
 
     @Override
     public void onAuthorizationRefused(@Nullable String error) {
+        super.onAuthorizationRefused(error);
         Snackbar.make(findViewById(R.id.coordinator),
                 "Refused by user",
                 Snackbar.LENGTH_SHORT)
@@ -214,16 +186,20 @@ public class TokenActivity extends BaseSpotifyActivity {
 
     @Override
     public void onAuthorizationSucceed(@Nullable TokenResponse tokenResponse, @Nullable UserPrivate user) {
+        super.onAuthorizationSucceed(tokenResponse, user);
         displayAuthorized(tokenResponse, user);
     }
 
     @Override
     public void onRefreshAccessTokenStarted() {
+        super.onRefreshAccessTokenStarted();
         displayLoading("on Refresh Access Token Started");
     }
 
     @Override
     public void onRefreshAccessTokenSucceed(@Nullable TokenResponse tokenResponse, @Nullable UserPrivate user) {
+        super.onRefreshAccessTokenSucceed(tokenResponse, user);
+        Toast.makeText(this, "Refresh access token succeed", Toast.LENGTH_SHORT).show();
         displayAuthorized(tokenResponse, user);
     }
 }
