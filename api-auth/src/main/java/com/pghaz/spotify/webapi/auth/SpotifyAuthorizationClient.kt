@@ -396,6 +396,10 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
         }
     }
 
+    fun onCompletionActivity(intent: Intent) {
+        handleAuthorization(intent)
+    }
+
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (this.requestCode == requestCode) {
             if (resultCode == Activity.RESULT_CANCELED) {
@@ -404,26 +408,30 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
             }
 
             data?.let { intent ->
-                val response = AuthorizationResponse.fromIntent(intent)
-                val ex = AuthorizationException.fromIntent(intent)
+                handleAuthorization(intent)
+            }
+        }
+    }
 
-                if (response != null || ex != null) {
-                    mAuthStateManager.updateAfterAuthorization(response, ex)
-                }
+    private fun handleAuthorization(intent: Intent) {
+        val response = AuthorizationResponse.fromIntent(intent)
+        val ex = AuthorizationException.fromIntent(intent)
 
-                when {
-                    response?.authorizationCode != null -> {
-                        // authorization code exchange is required
-                        mAuthStateManager.updateAfterAuthorization(response, ex)
-                        exchangeAuthorizationCode(response)
-                    }
-                    ex != null -> {
-                        authorizationCallbacks.forEach { it.onAuthorizationRefused("Authorization flow failed: " + ex.message) }
-                    }
-                    else -> {
-                        authorizationCallbacks.forEach { it.onAuthorizationFailed("No authorization state retained - reauthorization required") }
-                    }
-                }
+        if (response != null || ex != null) {
+            mAuthStateManager.updateAfterAuthorization(response, ex)
+        }
+
+        when {
+            response?.authorizationCode != null -> {
+                // authorization code exchange is required
+                mAuthStateManager.updateAfterAuthorization(response, ex)
+                exchangeAuthorizationCode(response)
+            }
+            ex != null -> {
+                authorizationCallbacks.forEach { it.onAuthorizationRefused("Authorization flow failed: " + ex.message) }
+            }
+            else -> {
+                authorizationCallbacks.forEach { it.onAuthorizationFailed("No authorization state retained - reauthorization required") }
             }
         }
     }
