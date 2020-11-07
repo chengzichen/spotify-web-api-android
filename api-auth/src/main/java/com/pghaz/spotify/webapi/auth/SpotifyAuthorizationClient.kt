@@ -399,7 +399,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (this.requestCode == requestCode) {
             if (resultCode == Activity.RESULT_CANCELED) {
-                authorizationCallbacks.forEach { it.onAuthorizationCanceled() }
+                authorizationCallbacks.forEach { it.onAuthorizationCancelled() }
                 return
             }
 

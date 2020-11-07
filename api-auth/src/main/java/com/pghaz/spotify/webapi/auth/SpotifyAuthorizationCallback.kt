@@ -8,7 +8,7 @@ object SpotifyAuthorizationCallback {
     interface Authorize {
         fun onAuthorizationStarted()
 
-        fun onAuthorizationCanceled()
+        fun onAuthorizationCancelled()
 
         fun onAuthorizationFailed(error: String?)
 
