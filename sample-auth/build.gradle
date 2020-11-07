@@ -15,7 +15,7 @@ android {
 
         // Make sure this is consistent with the redirect URI scheme used in SpotifyAuthorizationClient.Builder
         manifestPlaceholders = [
-                'appAuthRedirectScheme': 'com.pghaz.revery'
+                'appAuthRedirectScheme': 'com.pghaz.spotify.webapi.auth.sample'
         ]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

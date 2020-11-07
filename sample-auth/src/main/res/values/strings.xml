@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">Auth Spotify</string>
 
-    <string name="spotify_client_id" translatable="false">7cb7f4b08ff748cc9f19c84cc627f9d9</string>
-    <string name="spotify_redirect_uri" translatable="false">com.pghaz.revery://connect</string>
+    <string name="spotify_client_id" translatable="false">86b13c94472b46debdfaed34f01f61a4</string>
+    <string name="spotify_redirect_uri" translatable="false">com.pghaz.spotify.webapi.auth.sample://callback</string>
 
     <string name="auth_granted">Authorization granted</string>
     <string name="intro_header">OpenID AppAuth Demo</string>
