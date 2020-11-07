@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/kaaes/spotify-web-api-android.svg?branch=master)](https://travis-ci.org/kaaes/spotify-web-api-android)
-[![Release](https://img.shields.io/github/release/kaaes/spotify-web-api-android.svg?label=maven)](https://jitpack.io/#kaaes/spotify-web-api-android)
+[![](https://jitpack.io/v/pghazal/spotify-web-api-android.svg)](https://jitpack.io/#pghazal/spotify-web-api-android)
 
 # Spotify Web API for Android
 
@@ -22,10 +21,13 @@ repositories {
 
 dependencies {
     // To import for Retrofit 1.9
-    compile 'com.github.kaaes.spotify-web-api-android:api-retrofit:0.4.1'
+    implementation 'com.github.pghazal.spotify-web-api-android:api-retrofit:1.0.0'
 
     // To import for Retrofit 2.0 (experimantal)
-    compile 'com.github.kaaes.spotify-web-api-android:api-retrofit2:0.4.1'
+    implementation 'com.github.pghazal.spotify-web-api-android:api-retrofit2:1.0.0'
+    
+    // To import Authentication
+    implementation 'com.github.pghazal.spotify-web-api-android:api-auth:1.0.0'
 
     // Other dependencies your app might use
 }
