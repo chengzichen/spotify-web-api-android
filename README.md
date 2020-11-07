@@ -165,6 +165,22 @@ Response<TracksPager> response = call.execute();
 SpotifyError.fromResponse(response);
 ```
 
+## ProGuard
+
+```
+# Spotify Retrofit
+-keep class io.github.kaaes.spotify.webapi.retrofit.** { *; }
+-keep interface io.github.kaaes.spotify.webapi.retrofit.** { *; }
+
+# Spotify Core
+-keep class io.github.kaaes.spotify.webapi.core.** { *; }
+-keep interface io.github.kaaes.spotify.webapi.core.** { *; }
+
+# Spotify Auth
+-keep class com.pghaz.spotify.webapi.auth.** { *; }
+-keep interface com.pghaz.spotify.webapi.auth.** { *; }
+```
+
 ## Help
 
 #### Versioning policy
