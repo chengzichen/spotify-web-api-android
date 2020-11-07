@@ -217,11 +217,15 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
     }
 
     fun addAuthorizationCallback(authorizationCallback: SpotifyAuthorizationCallback.Authorize) {
-        this.authorizationCallbacks.add(authorizationCallback)
+        if (!this.authorizationCallbacks.contains(authorizationCallback)) {
+            this.authorizationCallbacks.add(authorizationCallback)
+        }
     }
 
     fun addRefreshTokenCallback(refreshTokenCallback: SpotifyAuthorizationCallback.RefreshToken) {
-        this.refreshTokenCallbacks.add(refreshTokenCallback)
+        if (!this.refreshTokenCallbacks.contains(refreshTokenCallback)) {
+            this.refreshTokenCallbacks.add(refreshTokenCallback)
+        }
     }
 
     fun removeAuthorizationCallback(authorizationCallback: SpotifyAuthorizationCallback.Authorize) {
