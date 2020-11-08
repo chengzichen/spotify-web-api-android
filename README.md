@@ -106,63 +106,66 @@ To handle Spotify authentication, authorization and refresh token, the library u
     android {
        ...
     
-    defaultConfig {
-        applicationId "..."
+        defaultConfig {
+            applicationId "..."
         
-        // For example if your Spotify redirect URI is goatscheme://callback
-        // make sure you set ´goatscheme´ instead of ´SPOTIFY_REDIRECT_URI_SCHEME´
-        manifestPlaceholders = [
-            'appAuthRedirectScheme': 'SPOTIFY_REDIRECT_URI_SCHEME'
-        ]
-       
-        ...
-    }
+            // For example if your Spotify redirect URI is goatscheme://callback
+            // make sure you set ´goatscheme´ instead of ´SPOTIFY_REDIRECT_URI_SCHEME´
+            manifestPlaceholders = [
+                'appAuthRedirectScheme': 'SPOTIFY_REDIRECT_URI_SCHEME'
+            ]
+
+            ...
+        }
         ...
     }
 ´´´
 
 ### Step 2: initialize SpotifyAuthorizationClient
 
-In your ´onCreate()´ Activity, initialize the ´SpotifyAuthorizationClient´.
+In your ´´´onCreate()´´´ Activity, initialize the ´´´SpotifyAuthorizationClient´´´.
 
 ´´´
-lateinit var spotifyAuthClient: SpotifyAuthorizationClient
 
-private fun initSpotifyAuthClient() {
+    lateinit var spotifyAuthClient: SpotifyAuthorizationClient
+
+    private fun initSpotifyAuthClient() {
         spotifyAuthClient = SpotifyAuthorizationClient
-            .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
-            .build(this)
+             .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
+             .build(this)
     }
         
- override fun onCreate(savedInstanceState: Bundle?) {
-       super.onCreate(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
        
-       initSpotifyAuthClient()
+        initSpotifyAuthClient()
        
-       ...
- }
+        ...
+    }
  ´´´
  
 If needed you can add [scopes](https://developer.spotify.com/documentation/general/guides/scopes/) at creation:
 
 ´´´
-spotifyAuthClient = SpotifyAuthorizationClient.Builder(
+
+    spotifyAuthClient = SpotifyAuthorizationClient.Builder(
             BuildConfig.SPOTIFY_CLIENT_ID,
             BuildConfig.SPOTIFY_REDIRECT_URI
-        )
-            .setScopes(
+          )
+          .setScopes(
                 arrayOf(
                     "app-remote-control",
                     "user-read-recently-played"
                 )
             )
             .build(this)
-            ´´´
+´´´
             
 You can custom the color of the Android ´CustomTabs´ when showing Spotify Authorization webview:
 
 ´´´
-spotifyAuthClient = SpotifyAuthorizationClient.Builder(
+    
+    spotifyAuthClient = SpotifyAuthorizationClient.Builder(
             BuildConfig.SPOTIFY_CLIENT_ID,
             BuildConfig.SPOTIFY_REDIRECT_URI
         )
@@ -174,12 +177,13 @@ spotifyAuthClient = SpotifyAuthorizationClient.Builder(
             )
         .setCustomTabColor(ContextCompat.getColor(this, R.color.colorPrimary))
         .build(this)
-        ´´´
+´´´
         
 And also decide if you want to fetch user infos after authorization granted:
 
 ´´´
-spotifyAuthClient = SpotifyAuthorizationClient.Builder(
+
+    spotifyAuthClient = SpotifyAuthorizationClient.Builder(
             BuildConfig.SPOTIFY_CLIENT_ID,
             BuildConfig.SPOTIFY_REDIRECT_URI
         )
@@ -192,11 +196,12 @@ spotifyAuthClient = SpotifyAuthorizationClient.Builder(
         .setCustomTabColor(ContextCompat.getColor(this, R.color.colorPrimary))
         .setFetchUserAfterAuthorization(true)
         .build(this)
-        ´´´
+´´´
         
 ### Step 3: call the different appropriate methods:
 
 ´´´
+    
     ...
     
     override fun onStart() {
@@ -215,30 +220,32 @@ spotifyAuthClient = SpotifyAuthorizationClient.Builder(
     }
     
     ...
-    ´´´
+´´´
         
 ### Step 4: implement and subscribe to Authorization and Refresh token callbacks
 
 Implement ´SpotifyAuthorizationCallback.Authorize´ to receive callbacks according to Spotify authorization.
 
 ´´´ 
-fun onAuthorizationStarted()
 
-fun onAuthorizationCancelled()
+    fun onAuthorizationStarted()
 
-fun onAuthorizationFailed(error: String?)
+    fun onAuthorizationCancelled()
 
-fun onAuthorizationRefused(error: String?)
+    fun onAuthorizationFailed(error: String?)
 
-fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
+    fun onAuthorizationRefused(error: String?)
+
+    fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
 ´´´
         
 Implement ´SpotifyAuthorizationCallback.RefreshToken´ to receive callbacks when you get a new refresh token.
 
 ´´´
-fun onRefreshAccessTokenStarted()
 
-fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
+    fun onRefreshAccessTokenStarted()
+
+    fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
 ´´´
 
 ´user: UserPrivate?´ will be null if you don't build the client with ´.setFetchUserAfterAuthorization(true)´.
