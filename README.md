@@ -1,6 +1,6 @@
 [![](https://jitpack.io/v/pghazal/spotify-web-api-android.svg)](https://jitpack.io/#pghazal/spotify-web-api-android)
 
-# Spotify Web API for Android
+# Spotify Web API and Authentication for Android
 
 This project is a fork from [this library](https://github.com/kaaes/spotify-web-api-android) with few adjustments and fixes.
 
@@ -98,6 +98,8 @@ SpotifyService spotifyService = adapter.create(SpotifyService.class);
 ## Obtaining Access Tokens
 
 To handle Spotify authentication, authorization and refresh token, the library uses [AppAuth](https://github.com/openid/AppAuth-Android).
+
+TL;DR: show me [complete code](https://github.com/pghazal/spotify-web-api-android#a-complete-code-)
 
 ### Step 1: add your redirect URI scheme into your app build.gradle
 
@@ -318,44 +320,106 @@ The new token will be given in:
 A nice way to handle authorization and silently getting a new token can be achieved like this:
 
 ```java
-override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-       
-    initSpotifyAuthClient()
+class BaseSpotifyActivity : AppCompatActivity(),
+    SpotifyAuthorizationCallback.Authorize,
+    SpotifyAuthorizationCallback.RefreshToken{
     
-    spotifyAuthClient.addAuthorizationCallback(this)
-    spotifyAuthClient.addRefreshTokenCallback(this)
-       
-    if (spotifyAuthClient.isAuthorized()) {
-        if (spotifyAuthClient.getNeedsTokenRefresh()) {
-            spotifyAuthClient.refreshAccessToken()
-        } else {
-            onSpotifyAuthorizedAndAvailable()
-        }
-    } else {
-        spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
+    companion object {
+        private const val REQUEST_CODE_SPOTIFY_LOGIN = 42
     }
-}
 
-// onStart(), onStop(), etc...
+    lateinit var spotifyAuthClient: SpotifyAuthorizationClient
 
-override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-    // At this point it is authorized but we don't have access token yet.
-    // We get it when onAuthorizationSucceed() is called
-    spotifyAuthClient.onActivityResult(requestCode, resultCode, data)
-}
+    private fun initSpotifyAuthClient() {
+        spotifyAuthClient = SpotifyAuthorizationClient
+            .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
+            .setScopes(
+                arrayOf(
+                    "app-remote-control",
+                    "user-read-recently-played"
+                )
+            )
+            .setCustomTabColor(Color.RED)
+            .setFetchUserAfterAuthorization(true)
+            .build(this)
+            
+        spotifyAuthClient.addAuthorizationCallback(this)
+        spotifyAuthClient.addRefreshTokenCallback(this)
+    }
 
-override fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
-    onSpotifyAuthorizedAndAvailable()
-}
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-override fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
-    onSpotifyAuthorizedAndAvailable()
-}
+        initSpotifyAuthClient()
 
-fun onSpotifyAuthorizedAndAvailable() {
-    // do your stuff here
+        if (spotifyAuthClient.isAuthorized()) {
+            if (spotifyAuthClient.getNeedsTokenRefresh()) {
+                spotifyAuthClient.refreshAccessToken()
+            } else {
+                onSpotifyAuthorizedAndAvailable(spotifyAuthClient.getLastTokenResponse()?.accessToken)
+            }
+        } else {
+            spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
+        }
+    }
+
+    private fun onSpotifyAuthorizedAndAvailable(accessToken: String?) {
+        // make your Spotify Web API calls here
+        Toast.makeText(this, accessToken, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // At this point it is authorized but we don't have access token yet.
+        // We get it when onAuthorizationSucceed() is called
+        spotifyAuthClient.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        spotifyAuthClient.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        spotifyAuthClient.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        spotifyAuthClient.removeAuthorizationCallback(this)
+        spotifyAuthClient.removeRefreshTokenCallback(this)
+        spotifyAuthClient.onDestroy()
+    }
+
+    override fun onAuthorizationCancelled() {
+        Toast.makeText(this, "auth cancelled", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationFailed(error: String?) {
+        Toast.makeText(this, "auth failed", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationRefused(error: String?) {
+        Toast.makeText(this, "auth refused", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationStarted() {
+        Toast.makeText(this, "auth start", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
+        onSpotifyAuthorizedAndAvailable(tokenResponse?.accessToken)
+    }
+
+    override fun onRefreshAccessTokenStarted() {
+        Toast.makeText(this, "refresh start", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
+        onSpotifyAuthorizedAndAvailable(tokenResponse?.accessToken)
+    }
 }
 
 ```
