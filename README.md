@@ -101,8 +101,7 @@ To handle Spotify authentication, authorization and refresh token, the library u
 
 ### Step 1: add your redirect URI scheme into your app build.gradle
 
-´´´
-
+```groovy
     android {
        ...
     
@@ -125,8 +124,7 @@ To handle Spotify authentication, authorization and refresh token, the library u
 
 In your ´´´onCreate()´´´ Activity, initialize the ´´´SpotifyAuthorizationClient´´´.
 
-´´´
-
+´´´kotlin
     lateinit var spotifyAuthClient: SpotifyAuthorizationClient
 
     private fun initSpotifyAuthClient() {
@@ -142,7 +140,7 @@ In your ´´´onCreate()´´´ Activity, initialize the ´´´SpotifyAuthorizati
        
         ...
     }
- ´´´
+´´´
  
 If needed you can add [scopes](https://developer.spotify.com/documentation/general/guides/scopes/) at creation:
 
