@@ -241,16 +241,22 @@ spotifyAuthClient.addRefreshTokenCallback(this)
 
 ### Step 5: Authorization
 
-There are two ways:
+There are two ways to authorize your app. Each way is done in three easy steps:
+1) Show login page
+2) Handle authorization response
+3) Get access token from ```onAuthorizationSucceed(...)``` callback
+
 
 #### Using a request code
 
+1)
 ```java
 spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
 ```
 
 You then have to override ```onActivityResult()``` to handle the response:
 
+2)
 ```java
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
@@ -262,6 +268,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 
 #### Using PendingIntent
 
+1)
 ```java
 val completionIntent = Intent(this, SpotifyActivity::class.java)
 val cancelIntent = Intent(this, LoginActivity::class.java)
@@ -276,6 +283,7 @@ spotifyAuthClient.authorize(this, completionPendingIntent, cancelPendingIntent)
 
 You then have to call this in the completion Intent Activity (here it's SpotifyActivity):
 
+2)
 ```java
 if (getIntent() != null) {
     // At this point it is authorized but we don't have access token yet.
@@ -286,7 +294,9 @@ if (getIntent() != null) {
 
 In the background, code exchange is done and access token will be given in:
 
-```onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)```
+
+3)```onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)```
+
 
 ### Step 6: Refresh token
 
@@ -301,9 +311,11 @@ The new token will be given in:
 
 ```val accessToken = spotifyAuthClient.getLastTokenResponse()?.accessToken```
 
+
 ### Need current user ?
 
 ```val currentUser = spotifyAuthClient.getCurrentUser()```
+
 
 ### A complete code ?
 
