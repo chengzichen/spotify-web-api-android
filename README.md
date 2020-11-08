@@ -209,7 +209,7 @@ override fun onDestroy() {
         
 ### Step 4: implement and subscribe to Authorization and Refresh token callbacks
 
-Implement ```SpotifyAuthorizationCallback.Authorize``` to receive callbacks for Spotify authorization.
+Make your Activity (or Fragment you decide) implements ```SpotifyAuthorizationCallback.Authorize``` to receive callbacks for Spotify authorization.
 
 ```java
 fun onAuthorizationStarted()
@@ -219,7 +219,7 @@ fun onAuthorizationRefused(error: String?)
 fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
 ```
         
-Implement ```SpotifyAuthorizationCallback.RefreshToken``` to receive callbacks when you get a new refresh token.
+Same with ```SpotifyAuthorizationCallback.RefreshToken``` to receive callbacks when you get a new refresh token.
 
 ```java
 fun onRefreshAccessTokenStarted()
@@ -249,14 +249,12 @@ There are two ways to authorize your app. Each way is done in three easy steps:
 
 #### Using a request code
 
-1)
+1) Show login page
 ```java
 spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
 ```
 
-You then have to override ```onActivityResult()``` to handle the response:
-
-2)
+2) You then have to override ```onActivityResult()``` to handle the response:
 ```java
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
@@ -268,7 +266,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 
 #### Using PendingIntent
 
-1)
+1) Show login page
 ```java
 val completionIntent = Intent(this, SpotifyActivity::class.java)
 val cancelIntent = Intent(this, LoginActivity::class.java)
@@ -281,9 +279,7 @@ val cancelPendingIntent = PendingIntent.getActivity(this, 7, cancelIntent, Pendi
 spotifyAuthClient.authorize(this, completionPendingIntent, cancelPendingIntent)
 ```
 
-You then have to call this in the completion Intent Activity (here it's SpotifyActivity):
-
-2)
+2) You then have to call this in the completion Intent Activity (here it's SpotifyActivity):
 ```java
 if (getIntent() != null) {
     // At this point it is authorized but we don't have access token yet.
@@ -292,10 +288,9 @@ if (getIntent() != null) {
 }
 ```
 
-In the background, code exchange is done and access token will be given in:
+3) In the background, code exchange is done and access token will be given in: 
 
-
-3)```onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)```
+```onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)```
 
 
 ### Step 6: Refresh token
