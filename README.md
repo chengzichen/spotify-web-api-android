@@ -1,6 +1,6 @@
 [![](https://jitpack.io/v/pghazal/spotify-web-api-android.svg)](https://jitpack.io/#pghazal/spotify-web-api-android)
 
-# Spotify Web API for Android
+# Spotify Web API and Authentication for Android
 
 This project is a fork from [this library](https://github.com/kaaes/spotify-web-api-android) with few adjustments and fixes.
 
