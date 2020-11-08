@@ -99,6 +99,8 @@ SpotifyService spotifyService = adapter.create(SpotifyService.class);
 
 To handle Spotify authentication, authorization and refresh token, the library uses [AppAuth](https://github.com/openid/AppAuth-Android).
 
+TL;DR: show me [complete code](https://github.com/pghazal/spotify-web-api-android#a-complete-code-)
+
 ### Step 1: add your redirect URI scheme into your app build.gradle
 
 ```groovy
