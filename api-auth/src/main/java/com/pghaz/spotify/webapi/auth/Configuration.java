@@ -209,8 +209,9 @@ public final class Configuration {
 
         if (!isRedirectUriRegistered()) {
             throw new InvalidConfigurationException(
-                    "Error with redirect_uri. Ensure that the appAuthRedirectScheme in your build.gradle file "
-                            + "is correctly configured and that it matches the redirect_uri in the SpotifyAuthorizationClient.Builder");
+                    "Error with redirect_uri: ensure that the appAuthRedirectScheme in your build.gradle file is set, " +
+                            "that it matches the redirect_uri scheme in the SpotifyAuthorizationClient.Builder and " +
+                            "that you set the full redirect_uri in the SpotifyAuthorizationClient.Builder");
         }
     }
 
