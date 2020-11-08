@@ -228,8 +228,34 @@ fun onRefreshAccessTokenStarted()
 fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
 ```
 
-```user: UserPrivate?``` will be null if you don't build the client with ```.setFetchUserAfterAuthorization(true)```.
+Note: ```user: UserPrivate?``` will be null if you don't build the client with ```.setFetchUserAfterAuthorization(true)```.
 
+Don't forget to add listeners:
+
+```java
+spotifyAuthClient.addAuthorizationCallback(this)
+spotifyAuthClient.addRefreshTokenCallback(this)
+```
+
+### Step 5: show authorization
+
+There are two ways:
+
+#### With request code
+
+```spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)```
+
+You then have to override ```onActivityResult()```
+
+```java
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+
+    // At this point it is authorized but we need to exchange code to get access token
+    // We get it into `onAuthorizationSucceed()`
+    spotifyAuthClient.onActivityResult(requestCode, resultCode, data)
+}
+```
 
 ## Error Handling
 
