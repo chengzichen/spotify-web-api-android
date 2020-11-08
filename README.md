@@ -318,44 +318,99 @@ The new token will be given in:
 A nice way to handle authorization and silently getting a new token can be achieved like this:
 
 ```java
-override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-       
-    initSpotifyAuthClient()
-    
-    spotifyAuthClient.addAuthorizationCallback(this)
-    spotifyAuthClient.addRefreshTokenCallback(this)
-       
-    if (spotifyAuthClient.isAuthorized()) {
-        if (spotifyAuthClient.getNeedsTokenRefresh()) {
-            spotifyAuthClient.refreshAccessToken()
-        } else {
-            onSpotifyAuthorizedAndAvailable()
-        }
-    } else {
-        spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
+class MainActivity : AppCompatActivity(),
+    SpotifyAuthorizationCallback.Authorize,
+    SpotifyAuthorizationCallback.RefreshToken{
+
+    lateinit var spotifyAuthClient: SpotifyAuthorizationClient
+
+    private fun initSpotifyAuthClient() {
+        spotifyAuthClient = SpotifyAuthorizationClient
+            .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
+            .setScopes(
+                arrayOf(
+                    "app-remote-control",
+                    "user-read-recently-played"
+                )
+            )
+            .setCustomTabColor(Color.RED)
+            .setFetchUserAfterAuthorization(true)
+            .build(this)
     }
-}
 
-// onStart(), onStop(), etc...
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-    // At this point it is authorized but we don't have access token yet.
-    // We get it when onAuthorizationSucceed() is called
-    spotifyAuthClient.onActivityResult(requestCode, resultCode, data)
-}
+        initSpotifyAuthClient()
 
-override fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
-    onSpotifyAuthorizedAndAvailable()
-}
+        spotifyAuthClient.addAuthorizationCallback(this)
+        spotifyAuthClient.addRefreshTokenCallback(this)
 
-override fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
-    onSpotifyAuthorizedAndAvailable()
-}
+        if (spotifyAuthClient.isAuthorized()) {
+            if (spotifyAuthClient.getNeedsTokenRefresh()) {
+                spotifyAuthClient.refreshAccessToken()
+            } else {
+                onSpotifyAuthorizedAndAvailable(spotifyAuthClient.getLastTokenResponse()?.accessToken)
+            }
+        } else {
+            spotifyAuthClient.authorize(this, 3)
+        }
+    }
 
-fun onSpotifyAuthorizedAndAvailable() {
-    // do your stuff here
+    private fun onSpotifyAuthorizedAndAvailable(accessToken: String?) {
+        Toast.makeText(this, accessToken, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // At this point it is authorized but we don't have access token yet.
+        // We get it when onAuthorizationSucceed() is called
+        spotifyAuthClient.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        spotifyAuthClient.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        spotifyAuthClient.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        spotifyAuthClient.onDestroy()
+    }
+
+    override fun onAuthorizationCancelled() {
+        Toast.makeText(this, "auth cancelled", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationFailed(error: String?) {
+        Toast.makeText(this, "auth failed", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationRefused(error: String?) {
+        Toast.makeText(this, "auth refused", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationStarted() {
+        Toast.makeText(this, "auth start", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
+        onSpotifyAuthorizedAndAvailable(tokenResponse?.accessToken)
+    }
+
+    override fun onRefreshAccessTokenStarted() {
+        Toast.makeText(this, "refresh start", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?) {
+        onSpotifyAuthorizedAndAvailable(tokenResponse?.accessToken)
+    }
 }
 
 ```
