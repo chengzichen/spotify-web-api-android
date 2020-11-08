@@ -162,7 +162,6 @@ You can custom the color of the Android ```CustomTabs``` when showing Spotify Au
 ```java
 spotifyAuthClient = SpotifyAuthorizationClient
     .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
-    .build(this)
     .setScopes(
         arrayOf(
             "app-remote-control",
@@ -178,7 +177,6 @@ And also decide if you want to fetch user infos after authorization granted:
 ```java
 spotifyAuthClient = SpotifyAuthorizationClient
     .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
-    .build(this)
     .setScopes(
         arrayOf(
             "app-remote-control",
@@ -211,12 +209,12 @@ override fun onDestroy() {
         
 ### Step 4: implement and subscribe to Authorization and Refresh token callbacks
 
-Implement ```SpotifyAuthorizationCallback.Authorize``` to receive callbacks according to Spotify authorization.
+Implement ```SpotifyAuthorizationCallback.Authorize``` to receive callbacks for Spotify authorization.
 
 ```java
 fun onAuthorizationStarted()
 fun onAuthorizationCancelled()
-fun onAuthorizationFailed(error: String?)
+fun onAuthorizationFailed(error: String?) 
 fun onAuthorizationRefused(error: String?)
 fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
 ```
@@ -228,32 +226,84 @@ fun onRefreshAccessTokenStarted()
 fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
 ```
 
-Note: ```user: UserPrivate?``` will be null if you don't build the client with ```.setFetchUserAfterAuthorization(true)```.
+Note: ```user: UserPrivate?``` will be empty if you don't build the client with ```.setFetchUserAfterAuthorization(true)```.
 
 Don't forget to add listeners:
 
 ```java
+spotifyAuthClient = SpotifyAuthorizationClient
+        .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
+        .build(this)
+
 spotifyAuthClient.addAuthorizationCallback(this)
 spotifyAuthClient.addRefreshTokenCallback(this)
 ```
 
-### Step 5: show authorization
+### Step 5: Authorization
 
 There are two ways:
 
 #### With request code
 
-```spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)```
+```java
+spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
+```
 
-You then have to override ```onActivityResult()```
+You then have to override ```onActivityResult()``` to handle the response:
 
 ```java
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
-
-    // At this point it is authorized but we need to exchange code to get access token
-    // We get it into `onAuthorizationSucceed()`
+    // At this point it is authorized but we don't have access token yet.
+    // We get it when onAuthorizationSucceed() is called
     spotifyAuthClient.onActivityResult(requestCode, resultCode, data)
+}
+```
+
+#### Using PendingIntent
+
+```java
+val completionIntent = Intent(this, SpotifyActivity::class.java)
+val cancelIntent = Intent(this, LoginActivity::class.java)
+cancelIntent.putExtra(EXTRA_FAILED, true)
+cancelIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+val completionPendingIntent = PendingIntent.getActivity(this, 6, completionIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+val cancelPendingIntent = PendingIntent.getActivity(this, 7, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+spotifyAuthClient.authorize(this, completionPendingIntent, cancelPendingIntent)
+```
+
+You then have to call this in the completion Intent Activity (here it's SpotifyActivity):
+
+```java
+if (getIntent() != null) {
+    // At this point it is authorized but we don't have access token yet.
+    // We get it at when onAuthorizationSucceed() is called
+    spotifyAuthClient.onCompletionActivity(getIntent())
+}
+```
+
+In the background, code exchange is done and access token will be given in ```onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)```.
+
+### Step 6: Refresh token
+
+Simply call ```spotifyAuthClient.refreshAccessToken()```.
+The new token will be given in ```onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)```.
+
+### When to refresh ?
+
+A nice way to handle authorization and silently getting a new token can be achieved like this:
+
+```java
+if (spotifyAuthClient.isAuthorized()) {
+    if (spotifyAuthClient.getNeedsTokenRefresh()) {
+        spotifyAuthClient.refreshAccessToken()
+    } else {
+        onSpotifyAuthorizedAndAvailable()
+    }
+} else {
+    spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
 }
 ```
 
