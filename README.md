@@ -147,7 +147,6 @@ If needed you can add [scopes](https://developer.spotify.com/documentation/gener
 ```java
 spotifyAuthClient = SpotifyAuthorizationClient
     .Builder(SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI)
-    .build(this)
     .setScopes(
         arrayOf(
             "app-remote-control",
@@ -209,7 +208,7 @@ override fun onDestroy() {
         
 ### Step 4: implement and subscribe to Authorization and Refresh token callbacks
 
-Make your Activity (or Fragment you decide) implements ```SpotifyAuthorizationCallback.Authorize``` to receive callbacks for Spotify authorization.
+Make your Activity implements ```SpotifyAuthorizationCallback.Authorize``` to receive callbacks for Spotify authorization.
 
 ```java
 fun onAuthorizationStarted()
@@ -226,7 +225,7 @@ fun onRefreshAccessTokenStarted()
 fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
 ```
 
-Note: ```user: UserPrivate?``` will be empty if you don't build the client with ```.setFetchUserAfterAuthorization(true)```.
+Note: ```user: UserPrivate?``` fields will be empty if you don't build the client with ```.setFetchUserAfterAuthorization(true)```.
 
 Don't forget to add listeners:
 
@@ -254,10 +253,11 @@ There are two ways to authorize your app. Each way is done in three easy steps:
 spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
 ```
 
-2) You then have to override ```onActivityResult()``` to handle the response:
+2) Handle authorization response in ```onActivityResult()```
 ```java
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
+    
     // At this point it is authorized but we don't have access token yet.
     // We get it when onAuthorizationSucceed() is called
     spotifyAuthClient.onActivityResult(requestCode, resultCode, data)
@@ -279,7 +279,7 @@ val cancelPendingIntent = PendingIntent.getActivity(this, 7, cancelIntent, Pendi
 spotifyAuthClient.authorize(this, completionPendingIntent, cancelPendingIntent)
 ```
 
-2) You then have to call this in the completion Intent Activity (here it's SpotifyActivity):
+2) Handle authorization response by calling this in the completion Intent Activity (here it's SpotifyActivity):
 ```java
 if (getIntent() != null) {
     // At this point it is authorized but we don't have access token yet.
@@ -288,7 +288,8 @@ if (getIntent() != null) {
 }
 ```
 
-3) In the background, code exchange is done and access token will be given in: 
+
+3) Then, code exchange is done and access token will be given in: 
 
 ```onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)```
 
