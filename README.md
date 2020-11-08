@@ -118,13 +118,13 @@ To handle Spotify authentication, authorization and refresh token, the library u
         }
         ...
     }
-´´´
+```
 
 ### Step 2: initialize SpotifyAuthorizationClient
 
-In your ´´´onCreate()´´´ Activity, initialize the ´´´SpotifyAuthorizationClient´´´.
+In your ```onCreate()``` Activity, initialize the ```SpotifyAuthorizationClient```.
 
-´´´kotlin
+```kotlin
     lateinit var spotifyAuthClient: SpotifyAuthorizationClient
 
     private fun initSpotifyAuthClient() {
@@ -140,11 +140,11 @@ In your ´´´onCreate()´´´ Activity, initialize the ´´´SpotifyAuthorizati
        
         ...
     }
-´´´
+```
  
 If needed you can add [scopes](https://developer.spotify.com/documentation/general/guides/scopes/) at creation:
 
-´´´
+```
 
     spotifyAuthClient = SpotifyAuthorizationClient.Builder(
             BuildConfig.SPOTIFY_CLIENT_ID,
@@ -157,11 +157,11 @@ If needed you can add [scopes](https://developer.spotify.com/documentation/gener
                 )
             )
             .build(this)
-´´´
+```
             
-You can custom the color of the Android ´CustomTabs´ when showing Spotify Authorization webview:
+You can custom the color of the Android ```CustomTabs``` when showing Spotify Authorization webview:
 
-´´´
+```
     
     spotifyAuthClient = SpotifyAuthorizationClient.Builder(
             BuildConfig.SPOTIFY_CLIENT_ID,
@@ -175,11 +175,11 @@ You can custom the color of the Android ´CustomTabs´ when showing Spotify Auth
             )
         .setCustomTabColor(ContextCompat.getColor(this, R.color.colorPrimary))
         .build(this)
-´´´
+```
         
 And also decide if you want to fetch user infos after authorization granted:
 
-´´´
+```
 
     spotifyAuthClient = SpotifyAuthorizationClient.Builder(
             BuildConfig.SPOTIFY_CLIENT_ID,
@@ -194,11 +194,11 @@ And also decide if you want to fetch user infos after authorization granted:
         .setCustomTabColor(ContextCompat.getColor(this, R.color.colorPrimary))
         .setFetchUserAfterAuthorization(true)
         .build(this)
-´´´
+```
         
 ### Step 3: call the different appropriate methods:
 
-´´´
+```
     
     ...
     
@@ -217,16 +217,14 @@ And also decide if you want to fetch user infos after authorization granted:
         spotifyAuthClient.onDestroy()
     }
     
-    ...
-´´´
+```
         
 ### Step 4: implement and subscribe to Authorization and Refresh token callbacks
 
-Implement ´SpotifyAuthorizationCallback.Authorize´ to receive callbacks according to Spotify authorization.
+Implement ```SpotifyAuthorizationCallback.Authorize``` to receive callbacks according to Spotify authorization.
 
-´´´ 
-
-    fun onAuthorizationStarted()
+```java
+fun onAuthorizationStarted()
 
     fun onAuthorizationCancelled()
 
@@ -235,18 +233,18 @@ Implement ´SpotifyAuthorizationCallback.Authorize´ to receive callbacks accord
     fun onAuthorizationRefused(error: String?)
 
     fun onAuthorizationSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
-´´´
+```
         
-Implement ´SpotifyAuthorizationCallback.RefreshToken´ to receive callbacks when you get a new refresh token.
+Implement ```SpotifyAuthorizationCallback.RefreshToken``` to receive callbacks when you get a new refresh token.
 
-´´´
+```
 
     fun onRefreshAccessTokenStarted()
 
     fun onRefreshAccessTokenSucceed(tokenResponse: TokenResponse?, user: UserPrivate?)
-´´´
+```
 
-´user: UserPrivate?´ will be null if you don't build the client with ´.setFetchUserAfterAuthorization(true)´.
+```user: UserPrivate?``` will be null if you don't build the client with ```.setFetchUserAfterAuthorization(true)```.
 
 
 
