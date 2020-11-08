@@ -318,9 +318,13 @@ The new token will be given in:
 A nice way to handle authorization and silently getting a new token can be achieved like this:
 
 ```java
-class MainActivity : AppCompatActivity(),
+class BaseSpotifyActivity : AppCompatActivity(),
     SpotifyAuthorizationCallback.Authorize,
     SpotifyAuthorizationCallback.RefreshToken{
+    
+    companion object {
+        private const val REQUEST_CODE_SPOTIFY_LOGIN = 42
+    }
 
     lateinit var spotifyAuthClient: SpotifyAuthorizationClient
 
@@ -336,15 +340,15 @@ class MainActivity : AppCompatActivity(),
             .setCustomTabColor(Color.RED)
             .setFetchUserAfterAuthorization(true)
             .build(this)
+            
+        spotifyAuthClient.addAuthorizationCallback(this)
+        spotifyAuthClient.addRefreshTokenCallback(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         initSpotifyAuthClient()
-
-        spotifyAuthClient.addAuthorizationCallback(this)
-        spotifyAuthClient.addRefreshTokenCallback(this)
 
         if (spotifyAuthClient.isAuthorized()) {
             if (spotifyAuthClient.getNeedsTokenRefresh()) {
@@ -353,11 +357,12 @@ class MainActivity : AppCompatActivity(),
                 onSpotifyAuthorizedAndAvailable(spotifyAuthClient.getLastTokenResponse()?.accessToken)
             }
         } else {
-            spotifyAuthClient.authorize(this, 3)
+            spotifyAuthClient.authorize(this, REQUEST_CODE_SPOTIFY_LOGIN)
         }
     }
 
     private fun onSpotifyAuthorizedAndAvailable(accessToken: String?) {
+        // make your Spotify Web API calls here
         Toast.makeText(this, accessToken, Toast.LENGTH_SHORT).show()
     }
 
@@ -381,6 +386,8 @@ class MainActivity : AppCompatActivity(),
 
     override fun onDestroy() {
         super.onDestroy()
+        spotifyAuthClient.removeAuthorizationCallback(this)
+        spotifyAuthClient.removeRefreshTokenCallback(this)
         spotifyAuthClient.onDestroy()
     }
 
