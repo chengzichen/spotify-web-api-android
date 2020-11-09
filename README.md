@@ -25,13 +25,13 @@ repositories {
 
 dependencies {
     // To import for Retrofit 1.9
-    implementation 'com.github.pghazal.spotify-web-api-android:api-retrofit:1.0.1'
+    implementation 'com.github.pghazal.spotify-web-api-android:api-retrofit:1.0.2'
 
     // To import for Retrofit 2.0 (experimantal)
-    implementation 'com.github.pghazal.spotify-web-api-android:api-retrofit2:1.0.1'
+    implementation 'com.github.pghazal.spotify-web-api-android:api-retrofit2:1.0.2'
     
     // To import Authentication
-    implementation 'com.github.pghazal.spotify-web-api-android:api-auth:1.0.1'
+    implementation 'com.github.pghazal.spotify-web-api-android:api-auth:1.0.2'
 
     // Other dependencies your app might use
 }
