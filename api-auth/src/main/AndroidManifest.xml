@@ -16,5 +16,9 @@
         </intent>
     </queries>
 
+    <queries>
+        <package android:name="com.spotify.music" />
+    </queries>
+
     <application />
 </manifest>
