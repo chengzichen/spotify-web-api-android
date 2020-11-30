@@ -22,6 +22,7 @@ import io.github.kaaes.spotify.webapi.core.models.UserPrivate
 import net.openid.appauth.*
 import net.openid.appauth.AuthorizationService.TokenResponseCallback
 import net.openid.appauth.ClientAuthentication.UnsupportedAuthenticationMethod
+import net.openid.appauth.browser.AnyBrowserMatcher
 import net.openid.appauth.browser.BrowserMatcher
 import net.openid.appauth.browser.BrowserWhitelist
 import net.openid.appauth.browser.VersionedBrowserMatcher
@@ -178,7 +179,9 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
 
     private val mBrowserMatcher: BrowserMatcher = BrowserWhitelist(
             VersionedBrowserMatcher.CHROME_CUSTOM_TAB,
-            VersionedBrowserMatcher.SAMSUNG_CUSTOM_TAB)
+            VersionedBrowserMatcher.SAMSUNG_CUSTOM_TAB,
+            VersionedBrowserMatcher.FIREFOX_CUSTOM_TAB,
+            AnyBrowserMatcher.INSTANCE)
 
     private var authorizationCallbacks: ArrayList<SpotifyAuthorizationCallback.Authorize> = ArrayList()
     private var refreshTokenCallbacks: ArrayList<SpotifyAuthorizationCallback.RefreshToken> = ArrayList()
