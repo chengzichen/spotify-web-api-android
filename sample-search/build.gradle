@@ -12,6 +12,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [redirectSchemeName: "spotify-sdk", redirectHostName: "auth"]
     }
 
     buildTypes {
@@ -43,11 +44,13 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'com.google.guava:guava:24.1-jre'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     // The way to use dependency from the remote repo
     // compile 'com.github.kaaes.spotify-web-api-android:api-retrofit2:retrofit_2-SNAPSHOT'
     api project(':api-retrofit2')
-    implementation 'com.spotify.android:auth:1.2.3'
+    implementation project(':api-core')
+    implementation 'com.spotify.android:auth:2.1.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.2.0'
 }

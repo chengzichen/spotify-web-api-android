@@ -23,8 +23,8 @@ import net.openid.appauth.*
 import net.openid.appauth.AuthorizationService.TokenResponseCallback
 import net.openid.appauth.ClientAuthentication.UnsupportedAuthenticationMethod
 import net.openid.appauth.browser.AnyBrowserMatcher
+import net.openid.appauth.browser.BrowserAllowList
 import net.openid.appauth.browser.BrowserMatcher
-import net.openid.appauth.browser.BrowserWhitelist
 import net.openid.appauth.browser.VersionedBrowserMatcher
 import okio.Okio
 import org.json.JSONException
@@ -177,7 +177,7 @@ class SpotifyAuthorizationClient private constructor(context: Context, clientId:
     private val mConfiguration: Configuration
     private lateinit var mAuthService: AuthorizationService
 
-    private val mBrowserMatcher: BrowserMatcher = BrowserWhitelist(
+    private val mBrowserMatcher: BrowserMatcher = BrowserAllowList(
             VersionedBrowserMatcher.CHROME_CUSTOM_TAB,
             VersionedBrowserMatcher.SAMSUNG_CUSTOM_TAB,
             VersionedBrowserMatcher.FIREFOX_CUSTOM_TAB,

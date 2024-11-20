@@ -18,9 +18,9 @@ public class LoginActivity extends Activity {
     private static final String TAG = LoginActivity.class.getSimpleName();
 
     @SuppressWarnings("SpellCheckingInspection")
-    private static final String CLIENT_ID = "8a91678afa49446c9aff1beaabe9c807";
+    private static final String CLIENT_ID = "cc055d977e4f422eba670f5e10742b45";
     @SuppressWarnings("SpellCheckingInspection")
-    private static final String REDIRECT_URI = "testschema://callback";
+    private static final String REDIRECT_URI = "spotify-sdk://auth";
 
     private static final int REQUEST_CODE = 1337;
 

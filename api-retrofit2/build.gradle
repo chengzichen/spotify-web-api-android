@@ -1,6 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'com.github.dcendents.android-maven'
 
 project.group = POM_BINTRAY_NAME
 version = POM_VERSION
@@ -34,5 +32,3 @@ android {
         warning 'InvalidPackage'
     }
 }
-
-apply from: rootProject.file('release-bintray.gradle')

@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
 
 project.group = POM_BINTRAY_NAME
 version = POM_VERSION
@@ -22,7 +21,7 @@ dependencies {
     androidTestImplementation 'com.squareup.okhttp:okhttp:2.7.5'
 }
 
-apply from: rootProject.file('release.gradle')
+//apply from: rootProject.file('release.gradle')
 
 android {
     compileSdkVersion 29
@@ -56,5 +55,3 @@ android.testOptions.unitTests.all {
         println "Executing test for ${descriptor.name} with result: ${result.resultType}"
     }
 }
-
-apply from: rootProject.file('release-bintray.gradle')
