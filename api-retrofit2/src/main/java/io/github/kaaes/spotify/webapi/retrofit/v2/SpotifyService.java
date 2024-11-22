@@ -174,7 +174,7 @@ public interface SpotifyService {
      * @see <a href="https://developer.spotify.com/web-api/create-playlist/">Create a Playlist</a>
      */
     @POST("users/{user_id}/playlists")
-    Playlist createPlaylist(@Path("user_id") String userId, @Body Map<String, Object> options);
+    Call< Playlist> createPlaylist(@Path("user_id") String userId, @Body Map<String, Object> options);
 
     /**
      * Add tracks to a playlist

@@ -21,7 +21,6 @@ dependencies {
     androidTestImplementation 'com.squareup.okhttp:okhttp:2.7.5'
 }
 
-//apply from: rootProject.file('release.gradle')
 
 android {
     compileSdkVersion 29

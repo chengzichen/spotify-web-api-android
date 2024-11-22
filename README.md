@@ -48,7 +48,7 @@ SpotifyService spotifyService = Spotify.createAuthenticatedService(accessToken);
 // so if you know you'll only use the ones that don't require authorisation
 // you can use unauthenticated service instead:
 
-SpotifyService spotifyService = Spotify.createNotAuthenticatedService()
+SpotifyService spotifyService = Spotify.createNotAuthenticatedService();
 
 Call<Album> call = spotifyService.getAlbum("2dIGnmEIy1WZIcZCFSj6i8");
 Response<Album> response = call.execute();
